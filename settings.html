@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Restore display preference before the page paints. -->
+    <!-- Internal script: theme.js -->
+    <script data-source="theme.js">
+'use strict';
+// Run in <head> before styles: restore the saved theme before the first paint.
+// This stores only a display preference, never account information.
+(() => {
+  const key = 'hearnest.theme';
+  let current = 'light';
+  function savedTheme() {
+    try { const stored = localStorage.getItem(key); if (stored === 'dark' || stored === 'light') return stored; } catch {}
+    try {
+      const cookie = document.cookie.split('; ').find(item => item.startsWith('hearnest_theme='));
+      return cookie?.split('=')[1] === 'dark' ? 'dark' : 'light';
+    } catch { return 'light'; }
+  }
+  function apply(theme, persist = false) {
+    if (theme !== 'dark' && theme !== 'light') return;
+    current = theme;
+    document.documentElement.dataset.theme = theme;
+    const checkbox = document.getElementById('dark-mode');
+    if (checkbox) checkbox.checked = theme === 'dark';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      if (!meta.dataset.lightThemeColor) meta.dataset.lightThemeColor = meta.content;
+      meta.content = theme === 'dark' ? '#242620' : meta.dataset.lightThemeColor;
+    }
+    if (persist) {
+      try { localStorage.setItem(key, theme); } catch {}
+      // Cookie fallback preserves the preference when localStorage is restricted.
+      try { if (location.protocol === 'http:' || location.protocol === 'https:') document.cookie = `hearnest_theme=${theme}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === 'https:' ? '; Secure' : ''}`; } catch {}
+    }
+  }
+  apply(savedTheme());
+  document.addEventListener('DOMContentLoaded', () => {
+    apply(savedTheme());
+    document.getElementById('dark-mode')?.addEventListener('change', event => apply(event.target.checked ? 'dark' : 'light', true));
+  });
+  // Keep other tabs and browser Back/Forward restorations in sync.
+  window.addEventListener('storage', event => { if (event.key === key) apply(event.newValue === 'dark' ? 'dark' : 'light'); });
+  window.addEventListener('pageshow', () => apply(savedTheme()));
+  window.HearnestTheme = { set: theme => apply(theme, true), get: () => current };
+})();
+    </script>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f7f1e5" />
+    <title>Settings · HEARNEST</title>
+    <!-- Internal styles: styles.css -->
+    <style data-source="styles.css">
+:root {
+  color-scheme: light;
+  --canvas: #f7f1e5;
+  --ink: #291b0b;
+  --muted: #898680;
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", Arial, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 240px;
+}
+
+.welcome {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: max(28px, min(13.73svh, 128px)) 20px max(32px, 7.2svh);
+  padding-top: max(env(safe-area-inset-top), min(13.73svh, 128px), 28px);
+  padding-bottom: max(env(safe-area-inset-bottom), 7.2svh, 32px);
+  text-align: center;
+}
+
+/* The supplied artwork is shown in its original proportions. The viewport
+   crops away the reference's text and button, which are real HTML below. */
+.brand {
+  position: relative;
+  width: calc(100% + 40px);
+  aspect-ratio: 430 / 412;
+  margin-inline: -20px;
+  overflow: hidden;
+}
+
+.brand img {
+  position: absolute;
+  top: -31.067961%;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+h1 {
+  margin: 40px 0 0;
+  font-size: clamp(25px, 7.45vw, 32px);
+  font-weight: 900;
+  line-height: 1.23;
+  letter-spacing: -1.05px;
+}
+
+.description {
+  max-width: 365px;
+  margin: 24px auto 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-wrap: pretty;
+  color: var(--muted);
+}
+
+.start-button {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 36px);
+  min-height: 74px;
+  margin: clamp(32px, 7.3svh, 68px) auto 0;
+  padding: 18px 24px;
+  overflow: hidden;
+  border: 0;
+  border-top: 3px solid #0788ff;
+  border-radius: 23px;
+  background: linear-gradient(180deg, #0877f9 0%, #0754d8 24%, #1137ac 66%, #14248e 100%);
+  box-shadow: inset 0 5px 5px -2px #a4e1ff, inset 0 -2px 3px #2430a2, 0 6px 4px -1px #0005;
+  color: #fff;
+  font: 800 16px / 1.25 "Trebuchet MS", Arial, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-decoration: none;
+}
+
+.start-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+  right: 9px;
+  left: 9px;
+  height: 17px;
+  border-radius: 50%;
+  background: linear-gradient(#a1d7ff9c, #78bfff00);
+  filter: blur(2px);
+}
+
+.start-button::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 33px;
+  width: 12px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d5f3ff;
+  box-shadow: -9px 7px 0 -0.5px #9ad3ff;
+  transform: rotate(-14deg);
+}
+
+.start-button:focus-visible {
+  outline: 3px solid #006cce;
+  outline-offset: 5px;
+}
+
+.start-button:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 4px 5px -2px #a4e1ff, 0 3px 3px #0005;
+}
+
+@media (max-width: 350px), (max-height: 700px) {
+  .welcome { padding-top: max(24px, env(safe-area-inset-top)); }
+  h1 { margin-top: 24px; }
+  .description { margin-top: 18px; font-size: 13px; }
+  .start-button { width: calc(100% - 16px); min-height: 64px; margin-top: 32px; }
+}
+
+    </style>
+    <!-- Internal styles: settings.css -->
+    <style data-source="settings.css">
+:root {
+  --settings-text: #291b0b;
+  --settings-brown: #82472e;
+  --settings-muted: #898680;
+  --settings-card: #faecd9;
+  --settings-accent: #ed4425;
+  --settings-track: #fff;
+  --settings-line: #cfc6b9;
+  font-family: Arial, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #242620;
+  --settings-text: #f7efdf;
+  --settings-brown: #efd2b5;
+  --settings-muted: #c3bcae;
+  --settings-card: #37382f;
+  --settings-accent: #ff896b;
+  --settings-track: #4c4f44;
+  --settings-line: #515346;
+}
+
+body { background: var(--canvas); color: var(--settings-text); }
+.settings-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
+.line-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.settings-screen { position: relative; isolation: isolate; width: 100%; max-width: 430px; min-height: 100svh; margin-inline: auto; padding: max(25px, env(safe-area-inset-top)) 24px max(48px, env(safe-area-inset-bottom)); overflow: clip; }
+.decorative-circle { position: absolute; z-index: -1; top: -89px; left: 30px; width: 150px; height: 152px; border-radius: 50%; background: #f2dece; }
+:root[data-theme="dark"] .decorative-circle { background: #463c31; }
+.back-link { display: grid; place-items: center; width: 44px; height: 44px; margin-left: -10px; color: var(--settings-text); }
+.back-link svg { width: 22px; height: 22px; }
+.learner-summary { display: flex; align-items: flex-end; gap: 26px; margin: 43px 14px 0; }
+.learner-photo { position: relative; flex: 0 0 116px; width: 116px; height: 116px; overflow: hidden; border: 3px solid #efe6cb; border-radius: 50%; }
+.learner-photo img { position: absolute; width: 370.689655%; max-width: none; height: auto; left: -32.758621%; top: -96.551724%; }
+.learner-details { min-width: 0; padding-bottom: 0; }
+.learner-details h1 { margin: 0 0 13px; font: 700 16px / 1.4 Arial, sans-serif; letter-spacing: 0; overflow-wrap: anywhere; }
+.edit-details { display: flex; align-items: center; gap: 8px; min-height: 32px; color: var(--settings-muted); font-size: 13px; line-height: 1.4; text-decoration: none; }
+.edit-details svg { flex: 0 0 21px; width: 21px; height: 21px; color: var(--settings-text); }
+.overall-progress { margin-top: 63px; }
+.overall-progress progress { appearance: none; display: block; width: 100%; height: 14px; overflow: hidden; border: 0; border-radius: 12px; background: var(--settings-track); box-shadow: 0 5px 5px #615c4540; color: var(--settings-accent); }
+progress::-webkit-progress-bar { border-radius: 12px; background: var(--settings-track); }
+progress::-webkit-progress-value { border-radius: 12px; background: var(--settings-accent); }
+progress::-moz-progress-bar { border-radius: 12px; background: var(--settings-accent); }
+.progress-caption { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 20px; font-size: 14px; color: var(--settings-muted); }
+.progress-caption strong { color: var(--settings-accent); font-size: 16px; }
+.activity-section { margin-top: 34px; }
+.activity-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.activity-heading h2 { margin: 0; font-size: 16px; line-height: 24px; }
+.activity-heading a { color: var(--settings-accent); font-size: 13px; text-decoration: none; padding-block: 10px; }
+.activity-rings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 25px; }
+.activity-ring { position: relative; isolation: isolate; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; margin: 0; border-radius: 50%; background: conic-gradient(from -15deg, #1e8ce4 0%, #1dd9e3 var(--activity-progress, 0%), var(--settings-track) var(--activity-progress, 0%) 100%); box-shadow: -3px 0 4px #7b72601c; }
+.activity-ring::before { content: ""; position: absolute; z-index: -1; inset: 13px; border-radius: 50%; background: var(--canvas); box-shadow: -3px 0 5px #756d5d18; }
+.activity-ring figcaption { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 13px; text-align: center; }
+.activity-ring span { color: var(--settings-muted); font-size: 13px; }
+.activity-ring strong { color: var(--settings-accent); font-size: 16px; }
+.settings-divider { width: calc(100% - 32px); margin: 41px auto 44px; border: 0; border-top: 1px solid var(--settings-line); }
+.settings-options { display: grid; gap: 35px; }
+.settings-row { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 72px; padding: 16px 24px 16px 29px; color: var(--settings-brown); font-size: clamp(18px, 5.6vw, 24px); font-weight: 700; line-height: 1.3; text-decoration: none; }
+.settings-row::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: 20px; background: var(--settings-card); box-shadow: 0 12px 14px #61563814; transform: rotate(-.8deg); }
+.chevron { flex: 0 0 24px; width: 24px; height: 24px; stroke-width: .9; }
+.toggle-row { cursor: pointer; }
+.switch { position: relative; flex: 0 0 56px; width: 56px; height: 29px; }
+.switch input { position: absolute; z-index: 1; inset: -8px 0; width: 100%; height: 45px; margin: 0; opacity: 0; cursor: pointer; }
+.switch-track { position: absolute; inset: 0; border-radius: 20px; background: #fff; }
+.switch-track::after { content: ""; position: absolute; top: 4px; left: 4px; width: 21px; height: 21px; border-radius: 50%; background: #70452a; transition: transform .18s; }
+.switch input:checked + .switch-track { background: #2b9987; }
+.switch input:checked + .switch-track::after { transform: translateX(27px); background: #fff; }
+.switch input:focus-visible + .switch-track { outline: 3px solid #2374bb; outline-offset: 4px; }
+.notification-status { display: none; margin: 14px 12px 0; color: var(--settings-muted); font-size: 12px; line-height: 1.5; }
+.notifications-on { display: none; }
+.settings-screen:has(#push-notifications:checked) .notification-status { display: block; }
+.settings-screen:has(#push-notifications:checked) .notifications-on { display: inline; }
+.settings-screen:has(#push-notifications:checked) .notifications-off { display: none; }
+.preview-note { margin: 36px 12px 0; font-size: 11px; color: var(--settings-muted); line-height: 1.5; text-align: center; }
+a:focus-visible { outline: 3px solid #2374bb; outline-offset: 5px; border-radius: 5px; }
+.settings-overlay { position: fixed; z-index: 10; inset: 0; display: none; align-items: center; justify-content: center; padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)); background: #16191380; }
+.settings-overlay:target { display: flex; }
+.overlay-backdrop { position: absolute; inset: 0; }
+.settings-panel { position: relative; width: 100%; max-width: 382px; max-height: calc(100svh - 40px); overflow-y: auto; padding: 36px 24px 30px; border-radius: 23px; background: var(--canvas); color: var(--settings-text); box-shadow: 0 18px 50px #0004; }
+.settings-panel h2 { margin: 10px 24px 20px 0; font-size: 25px; line-height: 1.3; }
+.settings-panel p, .privacy-list { font-size: 14px; line-height: 1.6; }
+.panel-note { color: var(--settings-muted); font-size: 12px !important; }
+.close-panel { position: absolute; top: 8px; right: 10px; display: grid; place-items: center; width: 44px; height: 44px; color: var(--settings-brown); font-size: 28px; text-decoration: none; }
+.activity-breakdown { margin-block: 24px; }
+.activity-breakdown > div { display: flex; justify-content: space-between; gap: 18px; padding-block: 14px; border-bottom: 1px solid var(--settings-line); }
+.activity-breakdown dd { margin: 0; color: var(--settings-accent); font-weight: 700; }
+.settings-panel .points-total { margin-block: 28px; color: var(--settings-accent); font-size: 48px; font-weight: 700; }
+.points-total span { display: block; color: var(--settings-muted); font-size: 14px; font-weight: 400; }
+.password-dialog { position: static; width: 100%; max-width: none; margin: 0; padding: 0; border: 0; overflow: visible; background: transparent; color: inherit; }
+.password-form { display: grid; gap: 10px; margin-top: 24px; }
+.password-form label { margin-top: 6px; font-size: 14px; }
+.password-form input { width: 100%; min-width: 0; min-height: 48px; padding: 12px; border: 1px solid var(--settings-line); border-radius: 10px; background: var(--settings-track); color: var(--settings-text); font: 16px Arial, sans-serif; }
+.password-form input:focus-visible { outline: 2px solid #2374bb; outline-offset: 2px; }
+.password-form .start-button { width: 100%; min-height: 54px; margin-top: 12px; }
+.password-result { display: none; }
+.password-dialog:not([open]) + .password-result { display: block; }
+.panel-action { display: inline-block; margin-top: 20px; padding: 13px 20px; border-radius: 22px; background: #216fa4; color: #fff; text-decoration: none; font-size: 14px; }
+.brand-name { color: #218fd2; font-size: 28px !important; font-weight: 800; }
+.privacy-list { padding-left: 20px; }
+.privacy-list li { margin-block: 14px; }
+.delete-account-row { color: #bc392e; }
+:root[data-theme="dark"] .delete-account-row { color: #ff9b89; }
+.account-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-top: 24px; }
+.account-actions .panel-action { margin: 0; border: 0; font: 700 14px / 1.4 Arial, sans-serif; cursor: pointer; }
+.cancel-action { display: inline-block; padding: 12px 0; color: var(--settings-brown); font-size: 14px; text-underline-offset: 4px; }
+.delete-dialog { position: static; width: 100%; max-width: none; margin: 0; padding: 0; border: 0; overflow: visible; background: transparent; color: inherit; }
+.deletion-consent { display: flex; align-items: flex-start; gap: 12px; margin-top: 24px; font-size: 14px; line-height: 1.6; cursor: pointer; }
+.deletion-consent input { flex: 0 0 22px; width: 22px; height: 22px; margin: 0; accent-color: #bc392e; }
+.danger-action { background: #bc392e; }
+.deletion-result { display: none; }
+.delete-dialog:not([open]) + .deletion-result { display: block; }
+.delete-form button:focus-visible, .deletion-consent input:focus-visible { outline: 3px solid #2374bb; outline-offset: 4px; }
+@media (max-width: 370px) {
+  .settings-screen { padding-inline: 18px; }
+  .learner-summary { gap: 16px; margin-inline: 4px; }
+  .learner-photo { flex-basis: 94px; width: 94px; height: 94px; }
+  .learner-details h1 { font-size: 15px; }
+  .edit-details { font-size: 12px; }
+  .activity-rings { gap: 10px; }
+  .activity-ring::before { inset: 10px; }
+  .activity-ring span { font-size: 11px; }
+  .settings-row { padding-inline: 20px; }
+  .settings-options { gap: 28px; }
+}
+@media (max-width: 280px) {
+  .learner-summary { align-items: center; gap: 12px; }
+  .learner-photo { flex-basis: 68px; width: 68px; height: 68px; }
+  .activity-rings { gap: 6px; }
+  .activity-ring::before { inset: 8px; }
+  .activity-ring span { font-size: 9px; }
+  .activity-ring strong { font-size: 14px; }
+  .settings-row { padding-inline: 16px; font-size: 17px; }
+  .switch { flex-basis: 50px; width: 50px; }
+  .switch input:checked + .switch-track::after { transform: translateX(21px); }
+}
+@media (prefers-reduced-motion: reduce) { .switch-track::after { transition: none; } }
+
+    </style>
+    <!-- Shared phone, tablet, landscape, and touch-control layouts. -->
+    <!-- Internal styles: responsive.css -->
+    <style data-source="responsive.css">
+/* Shared device layouts. Loaded LAST so each page keeps its original theme.
+   Phones use the full available width; tablet content is capped for readability. */
+:root { --app-max-width: 1040px; --nav-clearance: calc(128px + env(safe-area-inset-bottom)); }
+html { min-inline-size: 0; scroll-padding-bottom: var(--nav-clearance); }
+body { min-width: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+:where(button, a, input, select) { -webkit-tap-highlight-color: transparent; }
+:where(button, a) { touch-action: manipulation; }
+:where(h1, h2, p, label, figcaption) { overflow-wrap: break-word; }
+/* 16px input text avoids unwanted focus zoom on mobile browsers. */
+.signup-screen .field input, .signup-screen .field select,
+.profile-field input, .profile-field select, .password-form input { font-size: 16px; }
+.welcome, .signup-screen, .home-app, .instructions-screen,
+.settings-screen, .sound-screen, .profile-screen { max-width: var(--app-max-width); }
+.home-app, .instructions-screen { padding-bottom: calc(var(--nav-clearance) + 28px); }
+.bottom-nav, .lesson-nav {
+  position: fixed;
+  z-index: 5;
+  inset: auto auto 0 50%;
+  transform: translateX(-50%);
+  width: min(100%, var(--app-max-width));
+  min-height: 104px;
+  padding: 16px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.bottom-nav a, .lesson-nav a { min-width: 0; min-height: 64px; justify-content: center; text-align: center; }
+.bottom-nav svg, .lesson-nav svg { flex-shrink: 0; }
+.sound-screen { padding-bottom: var(--nav-clearance); }
+.lesson-content { padding-inline: clamp(16px, 5vw, 40px); }
+.lesson-tip p { min-width: 0; }
+.sound-card h2 { align-items: flex-start; }
+.sound-card h2::before { margin-top: .35em; }
+.sound-bubble { white-space: nowrap; overflow-wrap: normal; word-break: normal; padding-inline: 4px; }
+.stage-start { min-height: 44px; }
+.mute-button { min-height: 44px; }
+.gain-stepper button { width: 44px; min-height: 44px; }
+#gain-slider { min-height: 44px; }
+.gain-heading, .calibration-heading { flex-wrap: wrap; }
+.gain-gauge { max-width: 100%; }
+.gain-scale { flex-wrap: wrap; }
+.lesson-pagination { gap: clamp(16px, 5vw, 40px); }
+.lesson-pagination .start-button { min-width: 0; }
+.stage-copy, .learner-details, .settings-row > span:first-child { min-width: 0; }
+.settings-row { overflow-wrap: break-word; }
+.profile-card, .profile-confirmation { min-width: 0; }
+.profile-fields, .profile-form, .profile-field, .signup-form, .field { min-width: 0; }
+.photo-input { max-width: 100%; }
+.overlay, .settings-overlay { padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+.detail-panel, .settings-panel { max-height: calc(100dvh - 48px); overscroll-behavior: contain; }
+
+/* Narrow phones: keep words and form fields readable rather than squeezing them. */
+@media (max-width: 359px) {
+  .signup-screen { padding-inline: 20px; }
+  .age-fields { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .settings-row { padding-inline: 16px; font-size: 18px; }
+  .gain-heading h2 { font-size: 16px; }
+  .lesson-tip { gap: 4px; padding-inline: 10px; }
+  .wide-break { display: none; }
+}
+@media (max-width: 280px) {
+  .instructions-heading p { font-size: 11px; }
+  .instructions-header { grid-template-columns: 28px minmax(0, 1fr) 44px; }
+  .profile-link { width: 44px; height: 44px; flex-basis: 44px; }
+  .profile-age-control { grid-template-columns: minmax(0, 1fr); }
+  .lesson-pagination .start-button { font-size: 14px; padding-inline: 8px; }
+  .activity-rings { gap: 5px; }
+  .activity-ring figcaption { padding: 8px; }
+}
+
+/* Tablet portrait and landscape. The sound grids wrap naturally with available space. */
+@media (min-width: 600px) {
+  .welcome { max-width: 600px; padding-top: clamp(40px, 8svh, 90px); }
+  .brand { width: 430px; max-width: 100%; margin-inline: auto; }
+  .welcome h1 { font-size: 36px; }
+  .welcome .description { max-width: 450px; font-size: 16px; }
+  .welcome .start-button { max-width: 420px; }
+  .signup-screen { max-width: 640px; padding: 48px 48px max(40px, env(safe-area-inset-bottom)); }
+  .signup-form { margin-top: 36px; }
+  .age-fields { gap: 24px; }
+  .social-button { font-size: 16px; }
+  .home-app, .instructions-screen, .settings-screen { padding-inline: 32px; padding-top: max(32px, env(safe-area-inset-top)); }
+  .home-header { gap: 24px; }
+  .header-caption { font-size: 16px; }
+  .greeting strong { font-size: 26px; }
+  .stage-list { margin-top: 44px; }
+  .stage-card { min-height: 132px; }
+  .instructions-screen { max-width: 840px; }
+  .instructions-heading h1 { font-size: 22px; }
+  .instructions-heading p { font-size: 16px; }
+  .instructions-list { max-width: 680px; margin: 48px auto 0; gap: 30px; }
+  .instructions-list li { grid-template-columns: 52px minmax(0, 1fr); gap: 24px; }
+  .instructions-list p { font-size: 17px; line-height: 1.6; }
+  .instruction-icon { width: 48px; height: 48px; }
+  .instructions-next { width: 100%; max-width: 420px; margin: 44px auto 0; }
+  .profile-screen { max-width: 1040px; padding-inline: 32px; }
+  .profile-card, .profile-confirmation { max-width: 560px; padding: 28px 32px 36px; }
+  .profile-header h1 { font-size: 22px; }
+  .profile-fields { gap: 20px; }
+  .profile-field > label { font-size: 16px; }
+  .learner-summary { align-items: center; margin-top: 30px; }
+  .learner-details h1 { font-size: 24px; }
+  .edit-details { font-size: 16px; }
+  .overall-progress { margin-top: 40px; }
+  .activity-rings { max-width: 520px; margin-inline: auto; gap: 36px; }
+  .activity-ring span { font-size: 16px; }
+  .activity-ring strong { font-size: 20px; }
+  .settings-options { gap: 24px; }
+  .settings-row { min-height: 84px; padding-inline: 22px; font-size: 21px; }
+  .lesson-header { min-height: 108px; }
+  .lesson-header h1 { font-size: 22px; }
+  .lesson-header p { font-size: 17px; }
+  .lesson-content { padding-inline: 40px; }
+  .lesson-tip { max-width: 640px; margin-inline: auto; }
+  .lesson-tip p { font-size: 17px; }
+  .playback-status { font-size: 14px; }
+  .sound-card, .stage-two-card, .stage-three-card { padding: 24px 28px 32px; }
+  .sound-card + .sound-card, .stage-three-card + .stage-three-card { margin-top: 36px; }
+  .sound-card h2, .stage-two-card h2, .stage-three-card h2 { font-size: 24px; }
+  .sound-buttons, .stage-two-card .sound-buttons, .stage-three-card .sound-buttons {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 30px;
+  }
+  .single-sound .sound-buttons { justify-content: flex-start; padding-left: 24px; }
+  .sound-bubble { flex: 0 0 124px; width: 124px; height: 130px; font-size: 22px; }
+  .gain-card { max-width: 560px; margin-inline: auto; padding: 24px 30px; }
+  .gain-heading h2 { font-size: 23px; }
+  .gain-gauge { width: 220px; height: 220px; }
+  .calibration-heading { font-size: 14px; }
+  .gain-stepper span { font-size: 11px; }
+  .gain-help { font-size: 12px; }
+  .lesson-pagination { max-width: 560px; margin-inline: auto; }
+  .bottom-nav a, .lesson-nav a { font-size: 16px; }
+  .bottom-nav svg, .lesson-nav svg { width: 30px; height: 30px; }
+  .detail-panel, .settings-panel { max-width: 560px; padding: 36px; }
+}
+@media (min-width: 700px) {
+  .stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+  .stage-card { grid-template-columns: 64px minmax(0, 1fr) 65px; gap: 12px; }
+  .stage-card .stage-bubble { width: 64px; }
+  .settings-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) {
+  .home-app, .settings-screen { padding-inline: 48px; }
+  .stage-card { grid-template-columns: 78px minmax(0, 1fr) 72px; }
+  .stage-card .stage-bubble { width: 78px; }
+  .stage-copy h2 { font-size: 18px; }
+  .stage-copy p { font-size: 15px; }
+  .stage-start { width: 72px; }
+}
+/* Scroll short landscape screens normally; fixed navigation has reserved space. */
+@media (max-height: 600px) and (orientation: landscape) {
+  .welcome { padding-top: 24px; }
+  .brand { max-width: 300px; margin-inline: auto; }
+  .welcome h1 { margin-top: 20px; }
+  .home-app, .instructions-screen, .settings-screen, .signup-screen { padding-top: max(20px, env(safe-area-inset-top)); }
+  .profile-screen { place-items: start center; }
+  .instructions-list, .stage-list { margin-top: 28px; }
+  .instructions-next { margin-top: 28px; }
+}
+    </style>
+    <!-- Internal styles: auth.css -->
+    <style data-source="auth.css">
+/* Account feedback matches the existing phone/tablet layout. */
+.auth-status { margin: 20px 0; padding: 12px 14px; border-radius: 10px; background: #f9dfd5; color: #8d3020; font: 14px / 1.5 Arial, sans-serif; overflow-wrap: anywhere; }
+.auth-status[hidden] { display: none; }
+.auth-status.is-success { color: #146b56; background: #dcefe4; }
+.social-button:not(:disabled):hover { background: #f1e8d8; }
+.social-button:not(:disabled), a.text-button { cursor: pointer; }
+.social-button:focus-visible, a.text-button:focus-visible { outline: 3px solid #216fa4; outline-offset: 4px; }
+.login-form { display: grid; gap: 24px; }
+.login-form .field { gap: 10px; }
+.login-form .signup-submit { margin-top: 12px; }
+.login-intro { margin: 14px 0 0; color: #898680; font: 15px / 1.6 Arial, sans-serif; text-align: center; }
+.auth-back { display: inline-block; min-height: 44px; margin-bottom: 20px; padding: 12px 0; color: #693f25; font-size: 14px; text-underline-offset: 4px; }
+.login-prompt a { min-height: 44px; display: inline-flex; align-items: center; }
+    </style>
+    <!-- auth.js is embedded at the end of this page. -->
+      <!-- Internal styles: theme.css -->
+    <style data-source="theme.css">
+/* Shared dark palette for every screen. Light mode retains each page design. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #242620;
+  --ink: #f7efdf;
+  --muted: #c3bcae;
+  --home-ink: #efd2b5;
+  --settings-text: #f7efdf;
+  --settings-brown: #efd2b5;
+  --settings-muted: #c3bcae;
+  --settings-card: #37382f;
+  --settings-accent: #ff896b;
+  --settings-track: #4c4f44;
+  --settings-line: #515346;
+  --theme-card: #33382e;
+  --theme-raised: #2b3027;
+  --theme-link: #9ccaff;
+  background: var(--canvas);
+  color: var(--ink);
+}
+:root[data-theme="dark"] body { background: var(--canvas); color: var(--ink); }
+:root[data-theme="dark"] :is(.signup-screen, .social-button, .profile-header h1, .profile-back,
+ .back-link, .instructions-heading h1, .lesson-header h1, .sound-card h2, .gain-heading h2,
+ .gain-scale span:nth-child(2), .gauge-value output, .apple-icon) { color: var(--ink); }
+:root[data-theme="dark"] :is(.description, .login-intro, .service-note, .photo-input,
+ .profile-field > label, .profile-confirmation p, .instructions-heading p, .instructions-list p,
+ .lesson-header p, .playback-status, .gain-help, .gain-scale, .gauge-value > span,
+ .gain-stepper span, .demo-note, .sound-note, .preview-note) { color: var(--muted); }
+:root[data-theme="dark"] :is(.signup-panel h1, .form-confirmation h1, #login-title,
+ .profile-confirmation h2) { color: #91caff; }
+:root[data-theme="dark"] :is(.login-prompt, .home-link, .auth-back) { color: var(--theme-link); }
+:root[data-theme="dark"] .separator { color: var(--theme-link); }
+:root[data-theme="dark"] .separator::before,
+:root[data-theme="dark"] .separator::after { background: var(--theme-link); }
+:root[data-theme="dark"] :is(.bottom-nav, .lesson-nav, .lesson-header) { background: var(--theme-raised); }
+:root[data-theme="dark"] :is(.bottom-nav a, .lesson-nav a) { color: var(--home-ink); }
+:root[data-theme="dark"] :is(.bottom-nav, .lesson-nav) { box-shadow: 0 -12px 28px #0005; }
+:root[data-theme="dark"] :is(.profile-link, .profile-avatar) { background: var(--theme-card); color: #d9ddcf; border-color: #535a48; }
+:root[data-theme="dark"] .profile-avatar svg { stroke: #d9ddcf; }
+:root[data-theme="dark"] .stage-card::before,
+:root[data-theme="dark"] :is(.sound-card, .lesson-tip, .gain-card,
+ .profile-card, .profile-confirmation) { background: var(--theme-card); }
+:root[data-theme="dark"] :is(.sound-card, .gain-card) { border-color: #9e7e38; }
+:root[data-theme="dark"] :is(.detail-panel, .settings-panel) { background: var(--theme-raised); }
+:root[data-theme="dark"] :is(.lesson-tip p, .detail-panel, .settings-panel) { color: var(--ink); }
+:root[data-theme="dark"] :is(.field input, .field select, .profile-field input,
+ .profile-field select, .password-form input) { background: var(--theme-raised); color: var(--ink); border-color: #7994d3; }
+:root[data-theme="dark"] :is(.field input, .profile-field input, .password-form input)::placeholder { color: #b5bba9; }
+:root[data-theme="dark"] .social-button { border-color: #829de4; }
+:root[data-theme="dark"] .social-button:not(:disabled):hover { background: var(--theme-card); }
+:root[data-theme="dark"] .auth-status { background: #4b302b; color: #ffd5cb; }
+:root[data-theme="dark"] .auth-status.is-success { background: #254638; color: #c2f2d6; }
+:root[data-theme="dark"] .confirmation-mark,
+:root[data-theme="dark"] .confirmation-check { background: #254638; color: #b5eccd; }
+:root[data-theme="dark"] .photo-input::file-selector-button { background: var(--theme-raised); color: var(--ink); border-color: #647052; }
+:root[data-theme="dark"] .photo-label { color: #ffa17d; }
+:root[data-theme="dark"] .gauge-track { stroke: #b0b7a7; }
+:root[data-theme="dark"] .gain-stepper button { background: #4c5443; color: var(--ink); }
+:root[data-theme="dark"] .gauge-fill { stroke: #91df49; }
+:root[data-theme="dark"] .gain-gauge.is-muted .gauge-fill { stroke: #89917f; }
+:root[data-theme="dark"] :is(.lesson-divider, .settings-divider) { border-color: #776c47; }
+/* Preserve the supplied raster logo's colors inside a deliberate image tile. */
+:root[data-theme="dark"] .brand { border-radius: 24px; background: #f7f1e5; box-shadow: 0 10px 26px #0004; }
+    </style>
+      <!-- Internal styles: progress.css -->
+    <style data-source="progress.css">
+/* Listening completion is independent from the active/playing outline. */
+.sound-bubble.is-listened { border-color:#91d94d; }
+.sound-bubble.is-listened::after { content:'\2713'; position:absolute; right:6px; bottom:7px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#216a46; color:#fff; font:700 15px Arial,sans-serif; }
+.word-counter-help { position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.activity-save-status { margin:16px 0 0; color:var(--settings-muted,#898680); font:12px / 1.6 Arial,sans-serif; }
+.activity-breakdown dt { min-width:0; }
+.activity-breakdown dd { text-align:right; }
+    </style>
+    <!-- progress.js is embedded at the end of this page. -->
+  </head>
+  <body>
+    <svg
+      class="settings-symbols"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <symbol id="back-icon" viewBox="0 0 24 24">
+          <path d="M20 12H4m7-7-7 7 7 7" />
+        </symbol>
+        <symbol id="chevron-icon" viewBox="0 0 24 24">
+          <path d="m9 4 8 8-8 8" />
+        </symbol>
+        <symbol id="edit-icon" viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            stroke="none"
+            d="m15 2 6 5-12 14-6 1 0-6L15 2Zm-2 5 3 3 1-1-3-3-1 1Z"
+          />
+          <path d="M15 21h7" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <main class="settings-screen" id="settings-top" aria-label="Settings">
+      <div class="decorative-circle" aria-hidden="true"></div>
+      <!-- Replace # with the file path for your previous screen. -->
+      <a class="back-link" href="home.html" aria-label="Go back"
+        ><svg class="line-icon" aria-hidden="true">
+          <use href="#back-icon" /></svg
+      ></a>
+
+      <header class="learner-summary">
+        <div class="learner-photo">
+          <img
+            src="assets/settings-reference.jpg"
+            width="430"
+            height="1331"
+            alt="Learner profile photograph from the supplied reference"
+          />
+        </div>
+        <div class="learner-details">
+          <h1>DHYAAN PATEL</h1>
+          <a class="edit-details" href="edit-profile.html"
+            ><svg class="line-icon" aria-hidden="true">
+              <use href="#edit-icon" /></svg
+            ><span>Edit parent’s details</span></a
+          >
+        </div>
+      </header>
+
+      <section class="overall-progress" aria-label="Overall progress">
+        <progress value="0" max="100" aria-label="Overall sound progress: 0 percent">0%</progress>
+        <div class="progress-caption">
+          <span>Overall progress</span><strong>0%</strong>
+        </div>
+      </section>
+
+      <section class="activity-section" aria-labelledby="activity-title">
+        <div class="activity-heading">
+          <h2 id="activity-title">Dhyaan activity</h2>
+          <a href="#activity-details">View all</a>
+        </div>
+        <div class="activity-rings">
+          <figure class="activity-ring" data-activity="learning" aria-label="learning progress: 0 percent">
+            <figcaption><span>Learning</span><strong>0%</strong></figcaption>
+          </figure>
+          <figure class="activity-ring" data-activity="videos" aria-label="videos progress: 0 percent">
+            <figcaption><span>Videos</span><strong>0%</strong></figcaption>
+          </figure>
+          <figure class="activity-ring" data-activity="games" aria-label="games progress: 0 percent">
+            <figcaption><span>Games</span><strong>0%</strong></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <p id="activity-save-status" class="activity-save-status" role="status"></p>
+      <hr class="settings-divider" />
+      <div class="settings-options">
+        <a class="settings-row" href="#points"
+          ><span>Points Check</span
+          ><svg class="line-icon chevron" aria-hidden="true">
+            <use href="#chevron-icon" /></svg
+        ></a>
+        <a class="settings-row" href="#password"
+          ><span>Change Password</span
+          ><svg class="line-icon chevron" aria-hidden="true">
+            <use href="#chevron-icon" /></svg
+        ></a>
+        <div>
+          <label class="settings-row toggle-row" for="push-notifications"
+            ><span>Push Notifications</span
+            ><span class="switch"
+              ><input
+                type="checkbox"
+                id="push-notifications"
+                role="switch"
+                aria-describedby="notification-description" /><span
+                class="switch-track"
+                aria-hidden="true"
+              ></span></span
+          ></label>
+          <p class="notification-status" id="notification-description">
+            <span class="notifications-off">Notifications off.</span
+            ><span class="notifications-on"
+              >Notification preference enabled.</span
+            >
+            Device notifications will be available when connected.
+          </p>
+        </div>
+        <label class="settings-row toggle-row" for="dark-mode"
+          ><span>Dark Mode</span
+          ><span class="switch"
+            ><input type="checkbox" id="dark-mode" role="switch" /><span
+              class="switch-track"
+              aria-hidden="true"
+            ></span></span
+        ></label>
+        <a class="settings-row" href="#about"
+          ><span>About Us</span
+          ><svg class="line-icon chevron" aria-hidden="true">
+            <use href="#chevron-icon" /></svg
+        ></a>
+        <a class="settings-row" href="#privacy"
+          ><span>Privacy Policy</span
+          ><svg class="line-icon chevron" aria-hidden="true">
+            <use href="#chevron-icon" /></svg
+        ></a>
+        <a class="settings-row" href="#logout"
+          ><span>Logout</span
+          ><svg class="line-icon chevron" aria-hidden="true">
+            <use href="#chevron-icon" /></svg
+        ></a>
+        <a class="settings-row delete-account-row" href="#delete-account"
+          ><span>Delete Account</span
+          ><svg class="line-icon chevron" aria-hidden="true">
+            <use href="#chevron-icon" /></svg
+        ></a>
+      </div>
+      <p class="preview-note">Activity reflects completed sound playback. Dark Mode is remembered across the app.</p>
+
+      <section
+        class="settings-overlay"
+        id="activity-details"
+        aria-labelledby="activity-details-title"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Close activity details"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a
+            class="close-panel"
+            href="#settings-top"
+            aria-label="Close activity details"
+            >&times;</a
+          >
+          <h2 id="activity-details-title">Dhyaan activity</h2>
+          <p>Activity overview</p>
+          <dl class="activity-breakdown"><div><dt>Learning</dt><dd>0 sounds</dd></div><div><dt>Videos</dt><dd>Not available yet</dd></div><div><dt>Games</dt><dd>0 stages completed</dd></div></dl>
+          <p class="panel-note">
+            These are the sample values from the design. Live progress will be
+            connected later.
+          </p>
+        </div>
+      </section>
+
+      <section
+        class="settings-overlay"
+        id="points"
+        aria-labelledby="points-title"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Close points"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a class="close-panel" href="#settings-top" aria-label="Close points"
+            >&times;</a
+          >
+          <h2 id="points-title">Points Check</h2>
+          <p class="points-total">0 <span>points recorded</span></p>
+          <p>
+            Your points history will appear here when learning activities are
+            connected.
+          </p>
+        </div>
+      </section>
+
+      <section
+        class="settings-overlay"
+        id="password"
+        aria-label="Change password"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Close password form"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a
+            class="close-panel"
+            href="#settings-top"
+            aria-label="Close password form"
+            >&times;</a
+          >
+          <dialog open class="password-dialog" aria-labelledby="password-title">
+            <h2 id="password-title">Change Password</h2>
+            <p>
+              This form checks your entries. Password updates will be connected
+              later.
+            </p>
+            <form method="dialog" class="password-form">
+              <label for="current-password">Current password</label>
+              <input
+                type="password"
+                id="current-password"
+                name="current-password"
+                autocomplete="current-password"
+                required
+              />
+              <label for="new-password">New password</label>
+              <input
+                type="password"
+                id="new-password"
+                name="new-password"
+                autocomplete="new-password"
+                minlength="8"
+                maxlength="128"
+                aria-describedby="password-help"
+                required
+              />
+              <p id="password-help" class="panel-note">
+                Use at least 8 characters.
+              </p>
+              <button class="start-button" type="submit">Check password</button>
+            </form>
+          </dialog>
+          <div class="password-result">
+            <h2>Entries checked</h2>
+            <p>
+              Your entries passed the form checks. Your password has not been
+              changed, sent, or saved.
+            </p>
+            <a class="panel-action" href="#settings-top">Back to settings</a>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="settings-overlay"
+        id="about"
+        aria-labelledby="about-title"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Close About Us"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a
+            class="close-panel"
+            href="#settings-top"
+            aria-label="Close About Us"
+            >&times;</a
+          >
+          <h2 id="about-title">About Us</h2>
+          <p class="brand-name">HEARNEST</p>
+          <p>Connect &amp; Learn</p>
+          <p>
+            HEARNEST helps parents explore listening and learning activities
+            with their child. Learning stages are organised by hearing age.
+          </p>
+          <p class="panel-note">
+            This version includes local account sign-up and login; learning
+            progress is still preview data.
+          </p>
+        </div>
+      </section>
+
+      <section
+        class="settings-overlay"
+        id="privacy"
+        aria-labelledby="privacy-title"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Close privacy information"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a
+            class="close-panel"
+            href="#settings-top"
+            aria-label="Close privacy information"
+            >&times;</a
+          >
+          <h2 id="privacy-title">Privacy Policy</h2>
+          <p>Privacy information for this preview</p>
+          <ul class="privacy-list">
+            <li>
+              Account forms send details to this app backend. Passwords are
+              stored as salted hashes.
+            </li>
+            <li>Settings are not saved between visits.</li>
+            <li>
+              The notification switch changes a local preference; it does not
+              request device permissions.
+            </li>
+          </ul>
+          <p>
+            A full privacy policy will be added before accounts and online
+            services are enabled.
+          </p>
+        </div>
+      </section>
+      <section
+        class="settings-overlay"
+        id="logout"
+        aria-labelledby="logout-title"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Cancel logout"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a class="close-panel" href="#settings-top" aria-label="Cancel logout"
+            >&times;</a
+          >
+          <h2 id="logout-title">Logout?</h2>
+          <p class="auth-status" data-auth-status role="status" hidden></p>
+          <p>You’ll return to the welcome screen.</p>
+          <p class="panel-note">
+            Signing out ends your account session on this device.
+          </p>
+          <div class="account-actions">
+            <button class="panel-action" type="button" data-logout>
+              Logout</button
+            ><a class="cancel-action" href="#settings-top">Cancel</a>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="settings-overlay"
+        id="delete-account"
+        aria-label="Delete account confirmation"
+        tabindex="-1"
+      >
+        <a
+          class="overlay-backdrop"
+          href="#settings-top"
+          aria-label="Cancel account deletion"
+          tabindex="-1"
+        ></a>
+        <div class="settings-panel">
+          <a
+            class="close-panel"
+            href="#settings-top"
+            aria-label="Cancel account deletion"
+            >&times;</a
+          >
+          <dialog
+            open
+            class="delete-dialog"
+            aria-labelledby="delete-account-title"
+          >
+            <h2 id="delete-account-title">Delete Account?</h2>
+            <p>
+              Once connected, deleting your account will permanently remove its
+              profile and learning history.
+            </p>
+            <p class="panel-note">
+              Account deletion is not connected in this preview. No account or
+              data will be deleted.
+            </p>
+            <form method="dialog" class="delete-form">
+              <label class="deletion-consent"
+                ><input
+                  type="checkbox"
+                  name="deletion-confirmation"
+                  required
+                /><span
+                  >I understand that account deletion is permanent.</span
+                ></label
+              >
+              <div class="account-actions">
+                <button class="panel-action danger-action" type="submit">
+                  Confirm request</button
+                ><a class="cancel-action" href="#settings-top">Cancel</a>
+              </div>
+            </form>
+          </dialog>
+          <div class="deletion-result">
+            <h2>Confirmation checked</h2>
+            <p>
+              No account has been deleted. Account deletion will be available
+              when account services are connected.
+            </p>
+            <a class="panel-action" href="#settings-top">Back to settings</a>
+          </div>
+        </div>
+      </section>
+    </main>
+      <!-- Internal script: auth.js -->
+    <script data-source="auth.js">
+'use strict';
+// Account UI uses the same-origin backend. Passwords and session tokens are
+// never stored in localStorage or browser-readable cookies.
+(() => {
+  const message = document.querySelector('[data-auth-status]');
+  function show(text, success = false) {
+    if (!message) return;
+    message.textContent = text;
+    message.hidden = false;
+    message.classList.toggle('is-success', success);
+  }
+  async function session() {
+    if (!['http:', 'https:'].includes(location.protocol)) throw Error('Start the backend and open http://localhost:3000 to use accounts.');
+    const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' });
+    if (!response.ok) { const result = await response.json().catch(() => ({})); throw Error(result.error || 'Account service is unavailable. Please try again shortly.'); }
+    return response.json();
+  }
+  async function post(endpoint, data = {}) {
+    const current = await session();
+    const response = await fetch(endpoint, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': current.csrfToken },
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok) throw Error(result.error || 'Please try again.');
+    return result;
+  }
+  for (const [id, endpoint] of [['signup-form', '/api/auth/signup'], ['login-form', '/api/auth/login']]) {
+    const form = document.getElementById(id);
+    if (!form) continue;
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const button = form.querySelector('[type="submit"]');
+      if (button.disabled) return;
+      button.disabled = true;
+      show(id === 'signup-form' ? 'Creating your account…' : 'Signing in…', true);
+      try {
+        await post(endpoint, Object.fromEntries(new FormData(form)));
+        form.querySelector('[type="password"]').value = '';
+        const next = new URLSearchParams(location.search).get('next');
+        location.assign(next && /^(?:stage-[1-7]|instructions(?:-stage-[2-7])?)\.html$/.test(next) ? next : 'home.html');
+      } catch (error) { show(error.message); }
+      finally { button.disabled = false; }
+    });
+  }
+  // Providers intentionally fail clearly until their real OAuth setup is added.
+  // These buttons never simulate an Apple/Google account or save a fake session.
+  document.querySelectorAll('[data-provider]').forEach(button => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try { await post(`/api/auth/${button.dataset.provider}`); }
+      catch (error) { show(error.message); }
+      finally { button.disabled = false; }
+    });
+  });
+  document.querySelectorAll('[data-logout]').forEach(button => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try { await post('/api/auth/logout'); location.assign('index.html'); }
+      catch (error) { show(error.message); button.disabled = false; }
+    });
+  });
+  // Public lessons stay accessible. If a session exists, use the account name
+  // instead of the design's sample name. Render only text, never user HTML.
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    session().then(({ user }) => {
+      if (!user) return;
+      const greeting = document.querySelector('.greeting strong');
+      const learner = document.querySelector('.learner-details h1');
+      if (greeting) greeting.textContent = user.name;
+      if (learner) learner.textContent = user.name;
+    }).catch(() => {});
+  }
+})();
+    </script>
+    <!-- Internal script: progress.js -->
+    <script data-source="progress.js">
+'use strict';
+// A completed, audible playback updates the unique-word counter and activity.
+// Guest activity stays on this device. Signed-in activity is saved server-side.
+(() => {
+  let catalog = {"1":["girl","boy","coo","woo","ooh","goo","aahh","gur-gur"],"2":["aar","gaa","baa","maa","paa","kaa","fart","vibration","boom","bubbles","airy","mmm","umm","hmm","boy-yells","girl-yells","growls","squeals","sss","hhh","eee","laughs"],"3":["tongue-click","mago","mama","papa","baba","tata","gaga","nana","kaka","lala","dada","bada","daba","dad","bab","mam"]};
+  let user = null, scope = 'guest', queue = [], syncing = false;
+  let base = empty();
+  const stage = Number(document.documentElement.dataset.requiredStage || 0);
+  function empty() { return { completed:{}, stagePlays:{}, lastActivity:null }; }
+  function read(key,fallback) { try { const parsed=JSON.parse(localStorage.getItem(key));return parsed&&typeof parsed==='object'&&Array.isArray(parsed)===Array.isArray(fallback)?parsed:fallback; } catch { return fallback; } }
+  function write(key,value) { try { localStorage.setItem(key,JSON.stringify(value)); } catch {} }
+  const baseKey = () => `hearnest.progress.${scope}.v1`;
+  const queueKey = () => `hearnest.progress.pending.${scope}.v1`;
+  // Derive percentages from the current buttons, so adding/removing words
+  // automatically changes the denominator instead of keeping design numbers.
+  function summarize(input) {
+    const completed={},stagePlays={};let unique=0,plays=0,finished=0,total=0;
+    for(const [number,keys] of Object.entries(catalog)) {
+      completed[number]=[...new Set(Array.isArray(input.completed?.[number])?input.completed[number]:[])].filter(key=>keys.includes(key));
+      stagePlays[number]=Math.max(completed[number].length,Number(input.stagePlays?.[number])||0);
+      unique+=completed[number].length;total+=keys.length;plays+=stagePlays[number];
+      if(keys.length&&completed[number].length===keys.length)finished++;
+    }
+    return {completed,stagePlays,unique,total,plays,replays:Math.max(0,plays-unique),completedStages:finished,learningPercent:total?Math.round(unique/total*100):0,gamesPercent:Math.round(finished/Object.keys(catalog).length*100),videosPercent:0,lastActivity:input.lastActivity||null};
+  }
+  function snapshot() {
+    const copy=JSON.parse(JSON.stringify(base));
+    copy.completed ||= {};copy.stagePlays ||= {};
+    for(const event of queue) {
+      if(!catalog[event.stage]?.includes(event.sound))continue;
+      copy.completed[event.stage]=[...new Set([...(copy.completed[event.stage]||[]),event.sound])];
+      copy.stagePlays[event.stage]=(Number(copy.stagePlays[event.stage])||0)+1;
+      copy.lastActivity=Math.max(copy.lastActivity||0,event.at);
+    }
+    return summarize(copy);
+  }
+  function saveMessage(text) { const node=document.getElementById('activity-save-status');if(node)node.textContent=text; }
+  function render() {
+    const state=snapshot();
+    const counter=document.getElementById('lesson-title');
+    if(stage&&counter) {
+      const count=state.completed[stage]?.length||0,total=catalog[stage]?.length||0;
+      counter.textContent=`${count}/${total} Words`;
+      counter.setAttribute('aria-label',`${count} of ${total} different sounds listened to`);
+      document.querySelectorAll('[data-sound]').forEach(button=>{
+        const done=state.completed[stage]?.includes(button.dataset.sound);
+        button.classList.toggle('is-listened',!!done);
+        button.title=done?'Listened to — tap to replay':'Tap to listen';
+      });
+    }
+    const name=user?.name?.split(' ')[0]||'Your';
+    const heading=document.getElementById('activity-title');if(heading)heading.textContent=`${name} activity`;
+    const detailTitle=document.getElementById('activity-details-title');if(detailTitle)detailTitle.textContent=`${name} activity`;
+    for(const kind of ['learning','videos','games']) {
+      const ring=document.querySelector(`[data-activity="${kind}"]`);if(!ring)continue;
+      const percent=state[`${kind}Percent`];ring.style.setProperty('--activity-progress',`${percent}%`);
+      ring.querySelector('strong').textContent=`${percent}%`;
+      ring.setAttribute('aria-label',kind==='videos'?'Videos: no video activities available yet':`${kind} activity: ${percent} percent`);
+    }
+    const overall=document.querySelector('.overall-progress progress');
+    if(overall){overall.value=state.learningPercent;overall.setAttribute('aria-label',`Overall sound progress: ${state.learningPercent} percent`);}
+    const caption=document.querySelector('.progress-caption strong');if(caption)caption.textContent=`${state.learningPercent}%`;
+    const breakdown=document.querySelector('#activity-details .activity-breakdown');
+    if(breakdown) {
+      const rows=[['Learning',`${state.unique}/${state.total} different sounds`],['Videos','No video activities yet'],['Games',`${state.completedStages}/${Object.keys(catalog).length} sound stages completed`],['Completed playbacks',String(state.plays)],['Replays',String(state.replays)]];
+      for(const number of Object.keys(catalog))rows.push([`Stage ${number}`,`${state.completed[number].length}/${catalog[number].length} sounds`]);
+      breakdown.replaceChildren(...rows.map(([label,value])=>{const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;row.append(dt,dd);return row;}));
+    }
+    const explanation=document.querySelector('#activity-details .panel-note');
+    if(explanation)explanation.textContent='Learning counts different sounds played to the end. Games counts sound stages with every sound completed. Videos will update when video activities are added. These figures track usage, not learning mastery.';
+    return state;
+  }
+  async function flush() {
+    if(!user||syncing||!queue.length)return;
+    syncing=true;saveMessage('Saving activity…');
+    try {
+      while(queue.length) {
+        const sessionResponse=await fetch('/api/auth/session',{credentials:'same-origin',cache:'no-store'});
+        const session=await sessionResponse.json();
+        if(!sessionResponse.ok||session.user?.id!==user.id)throw Error('Account changed. Refresh to load the current activity.');
+        const event=queue[0];
+        const response=await fetch('/api/progress',{method:'POST',credentials:'same-origin',keepalive:true,headers:{'Content-Type':'application/json','X-CSRF-Token':session.csrfToken},body:JSON.stringify({...event,ownerId:user.id})});
+        const result=await response.json();
+        if(!response.ok)throw Error(result.error||'Activity could not be saved.');
+        base=result.progress;queue.shift();write(baseKey(),base);write(queueKey(),queue);render();
+      }
+      saveMessage('Activity saved to your account.');
+    } catch(error) { saveMessage(`${error.message} Pending activity stays on this device and will retry.`); }
+    finally { syncing=false; }
+  }
+  const ready=(async()=>{
+    if(window.HearnestStageAccess)await window.HearnestStageAccess.ready;
+    if(['http:','https:'].includes(location.protocol)) {
+      try {
+        const response=await fetch('/api/progress',{credentials:'same-origin',cache:'no-store'});
+        if(!response.ok)throw Error();
+        const result=await response.json();catalog=result.catalog;user=result.user;
+        if(user){scope=user.id;base=result.progress||empty();queue=read(queueKey(),[]);if(!Array.isArray(queue))queue=[];queue=queue.filter(event=>event&&catalog[event.stage]?.includes(event.sound)&&typeof event.eventId==="string");write(baseKey(),base);}
+      } catch { /* Guest/local playback still works if the service is offline. */ }
+    }
+    if(!user)base=summarize(read(baseKey(),empty()));
+    render();saveMessage(user?'Activity saved to your account.':'Guest activity is saved on this device. Log in to save progress to an account.');
+    if(queue.length)void flush();
+    return snapshot();
+  })();
+  function record(number,sound) {
+    if(!catalog[number]?.includes(sound))return;
+    const event={eventId:crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join(''),stage:Number(number),sound,at:Date.now()};
+    if(user){queue.push(event);write(queueKey(),queue);}
+    else {
+      base.completed ||= {};base.stagePlays ||= {};
+      base.completed[number]=[...new Set([...(base.completed[number]||[]),sound])];
+      base.stagePlays[number]=(Number(base.stagePlays[number])||0)+1;base.lastActivity=event.at;write(baseKey(),base);
+    }
+    render();if(user)void flush();
+  }
+  window.addEventListener('online',()=>void flush());
+  window.addEventListener('storage',event=>{if(event.key===baseKey()||(user&&event.key===queueKey())){base=summarize(read(baseKey(),empty()));if(user){queue=read(queueKey(),[]);if(!Array.isArray(queue))queue=[];}render();}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!user){base=read(baseKey(),empty());render();}else void flush();}});
+  window.HearnestProgress={ready,record,get:snapshot};
+})();
+    </script>
+  </body>
+</html>

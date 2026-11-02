@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en" data-required-stage="2">
+  <head>
+    <!-- Restore display preference before the page paints. -->
+    <!-- Internal script: theme.js -->
+    <script data-source="theme.js">
+'use strict';
+// Run in <head> before styles: restore the saved theme before the first paint.
+// This stores only a display preference, never account information.
+(() => {
+  const key = 'hearnest.theme';
+  let current = 'light';
+  function savedTheme() {
+    try { const stored = localStorage.getItem(key); if (stored === 'dark' || stored === 'light') return stored; } catch {}
+    try {
+      const cookie = document.cookie.split('; ').find(item => item.startsWith('hearnest_theme='));
+      return cookie?.split('=')[1] === 'dark' ? 'dark' : 'light';
+    } catch { return 'light'; }
+  }
+  function apply(theme, persist = false) {
+    if (theme !== 'dark' && theme !== 'light') return;
+    current = theme;
+    document.documentElement.dataset.theme = theme;
+    const checkbox = document.getElementById('dark-mode');
+    if (checkbox) checkbox.checked = theme === 'dark';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      if (!meta.dataset.lightThemeColor) meta.dataset.lightThemeColor = meta.content;
+      meta.content = theme === 'dark' ? '#242620' : meta.dataset.lightThemeColor;
+    }
+    if (persist) {
+      try { localStorage.setItem(key, theme); } catch {}
+      // Cookie fallback preserves the preference when localStorage is restricted.
+      try { if (location.protocol === 'http:' || location.protocol === 'https:') document.cookie = `hearnest_theme=${theme}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === 'https:' ? '; Secure' : ''}`; } catch {}
+    }
+  }
+  apply(savedTheme());
+  document.addEventListener('DOMContentLoaded', () => {
+    apply(savedTheme());
+    document.getElementById('dark-mode')?.addEventListener('change', event => apply(event.target.checked ? 'dark' : 'light', true));
+  });
+  // Keep other tabs and browser Back/Forward restorations in sync.
+  window.addEventListener('storage', event => { if (event.key === key) apply(event.newValue === 'dark' ? 'dark' : 'light'); });
+  window.addEventListener('pageshow', () => apply(savedTheme()));
+  window.HearnestTheme = { set: theme => apply(theme, true), get: () => current };
+})();
+    </script>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f7f1e5" />
+    <title>Stage 2 Instructions · HEARNEST</title>
+    <!-- Internal styles: styles.css -->
+    <style data-source="styles.css">
+:root {
+  color-scheme: light;
+  --canvas: #f7f1e5;
+  --ink: #291b0b;
+  --muted: #898680;
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", Arial, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 240px;
+}
+
+.welcome {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: max(28px, min(13.73svh, 128px)) 20px max(32px, 7.2svh);
+  padding-top: max(env(safe-area-inset-top), min(13.73svh, 128px), 28px);
+  padding-bottom: max(env(safe-area-inset-bottom), 7.2svh, 32px);
+  text-align: center;
+}
+
+/* The supplied artwork is shown in its original proportions. The viewport
+   crops away the reference's text and button, which are real HTML below. */
+.brand {
+  position: relative;
+  width: calc(100% + 40px);
+  aspect-ratio: 430 / 412;
+  margin-inline: -20px;
+  overflow: hidden;
+}
+
+.brand img {
+  position: absolute;
+  top: -31.067961%;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+h1 {
+  margin: 40px 0 0;
+  font-size: clamp(25px, 7.45vw, 32px);
+  font-weight: 900;
+  line-height: 1.23;
+  letter-spacing: -1.05px;
+}
+
+.description {
+  max-width: 365px;
+  margin: 24px auto 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-wrap: pretty;
+  color: var(--muted);
+}
+
+.start-button {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 36px);
+  min-height: 74px;
+  margin: clamp(32px, 7.3svh, 68px) auto 0;
+  padding: 18px 24px;
+  overflow: hidden;
+  border: 0;
+  border-top: 3px solid #0788ff;
+  border-radius: 23px;
+  background: linear-gradient(180deg, #0877f9 0%, #0754d8 24%, #1137ac 66%, #14248e 100%);
+  box-shadow: inset 0 5px 5px -2px #a4e1ff, inset 0 -2px 3px #2430a2, 0 6px 4px -1px #0005;
+  color: #fff;
+  font: 800 16px / 1.25 "Trebuchet MS", Arial, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-decoration: none;
+}
+
+.start-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+  right: 9px;
+  left: 9px;
+  height: 17px;
+  border-radius: 50%;
+  background: linear-gradient(#a1d7ff9c, #78bfff00);
+  filter: blur(2px);
+}
+
+.start-button::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 33px;
+  width: 12px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d5f3ff;
+  box-shadow: -9px 7px 0 -0.5px #9ad3ff;
+  transform: rotate(-14deg);
+}
+
+.start-button:focus-visible {
+  outline: 3px solid #006cce;
+  outline-offset: 5px;
+}
+
+.start-button:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 4px 5px -2px #a4e1ff, 0 3px 3px #0005;
+}
+
+@media (max-width: 350px), (max-height: 700px) {
+  .welcome { padding-top: max(24px, env(safe-area-inset-top)); }
+  h1 { margin-top: 24px; }
+  .description { margin-top: 18px; font-size: 13px; }
+  .start-button { width: calc(100% - 16px); min-height: 64px; margin-top: 32px; }
+}
+
+    </style>
+    <!-- Internal styles: home.css -->
+    <style data-source="home.css">
+:root { --home-ink: #82472e; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+.home-app { width: 100%; max-width: 430px; min-height: 100svh; margin-inline: auto; padding: max(31px, env(safe-area-inset-top)) 24px calc(154px + env(safe-area-inset-bottom)); color: var(--home-ink); font-family: Arial, sans-serif; }
+.home-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.greeting { margin: 0; font-size: 16px; line-height: 24px; }
+.greeting strong { font-size: 20px; }
+.header-caption { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }
+.profile-link { flex: 0 0 66px; display: grid; place-items: center; width: 66px; height: 66px; border-radius: 50%; background: #fffdf8; color: #86817b; }
+.profile-link svg { width: 34px; height: 34px; }
+.icon-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
+svg.line-icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.stage-list { display: grid; gap: 35px; margin: 83px 0 0; padding: 0; list-style: none; }
+.stage-card { position: relative; isolation: isolate; display: grid; grid-template-columns: 78px minmax(0, 1fr) 65px; align-items: center; gap: 13px; min-height: 104px; padding: 10px 11px; }
+.stage-card::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: 24px; background: #faecd9; box-shadow: 0 11px 14px #6d634018; transform: rotate(-1.4deg); }
+.stage-card:nth-child(even)::before { transform: rotate(1.3deg); }
+.stage-bubble { width: 78px; aspect-ratio: 1; border: 4px solid #9858e8; border-radius: 50%; background: #91e1f5; box-shadow: 0 0 6px #8a4fe56b, inset 0 0 2px #4669c2; }
+.stage-copy h2 { margin: 0 0 10px; font-size: 16px; font-weight: 700; line-height: 1.2; }
+.stage-copy p { margin: 0; font-size: 13px; line-height: 1.6; }
+.stage-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; align-self: start; }
+.stage-start { position: relative; display: grid; place-items: center; width: 65px; min-height: 34px; padding: 7px 8px; border-radius: 22px; background: linear-gradient(160deg, #27ef9e, #63c938 77%, #71ac29); box-shadow: inset 0 2px 3px #a9ffd870, 0 3px 1px #82875a9c; color: white; font-size: 14px; text-decoration: none; }
+.stage-start::before { content: ""; position: absolute; top: 5px; left: 10px; width: 9px; height: 4px; border-radius: 50%; background: #afffcf85; transform: rotate(-25deg); }
+.stage-start { border: 0; font-family: inherit; }
+.stage-start:active { transform: translateY(2px); box-shadow: 0 1px 1px #82875a9c; }
+.favorite { position: relative; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; }
+.favorite input { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.favorite svg { width: 25px; height: 25px; transition: fill .15s, color .15s; }
+.favorite input:checked + svg { fill: #e28377; color: #ae493a; }
+.favorite input:focus-visible + svg { outline: 2px solid #216fa4; outline-offset: 5px; border-radius: 4px; }
+a:focus-visible, .panel-close:focus-visible { outline: 3px solid #216fa4; outline-offset: 4px; }
+.more-levels { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 38px; }
+.more-levels h2 { margin: 0; font-size: 16px; }
+.more-levels a { color: inherit; font-size: 13px; text-underline-offset: 3px; }
+.bottom-nav { position: fixed; z-index: 5; bottom: 0; left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; width: min(100%, 430px); min-height: 111px; padding: 24px 36px max(12px, env(safe-area-inset-bottom)); border-radius: 25px 25px 0 0; background: #fffef9; box-shadow: 0 -15px 30px #413a342e; }
+.bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 8px; color: var(--home-ink); font-size: 13px; text-decoration: none; }
+.bottom-nav svg { width: 27px; height: 27px; }
+.overlay { position: fixed; z-index: 10; inset: 0; display: none; align-items: center; justify-content: center; padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)); background: #32231365; overflow-y: auto; }
+.overlay:target { display: flex; }
+.overlay-dismiss { position: absolute; inset: 0; }
+.detail-panel { position: relative; width: 100%; max-width: 382px; max-height: calc(100svh - 40px); overflow-y: auto; padding: 32px 24px; border-radius: 24px; background: var(--canvas); box-shadow: 0 15px 50px #35220e35; }
+.detail-panel h2 { margin: 16px 0; font-size: 26px; line-height: 1.2; }
+.detail-panel p { font-size: 15px; line-height: 1.6; }
+.detail-panel .stage-bubble { margin-bottom: 22px; }
+.detail-panel .eyebrow { margin-top: 0; color: #216fa4; font-size: 13px; font-weight: 700; }
+.panel-close { position: absolute; top: 12px; right: 14px; display: grid; place-items: center; width: 44px; height: 44px; color: var(--home-ink); font-size: 28px; text-decoration: none; }
+.panel-link { display: inline-block; margin-top: 16px; padding: 13px 20px; border-radius: 24px; background: #216fa4; color: white; text-decoration: none; font-size: 14px; }
+.setting-option { display: flex; align-items: center; gap: 12px; min-height: 48px; margin-block: 20px; cursor: pointer; }
+.setting-option input { width: 22px; height: 22px; accent-color: #216fa4; }
+.home-app:has(#compact-cards:checked) .stage-list { gap: 18px; }
+.home-app:has(#compact-cards:checked) .stage-card { min-height: 94px; }
+.all-levels-links { padding-left: 22px; }
+.all-levels-links li { margin-block: 16px; }
+.all-levels-links a { color: var(--home-ink); text-underline-offset: 4px; line-height: 1.5; }
+@media (max-width: 370px) {
+  .home-app { padding-inline: 16px; }
+  .stage-card { grid-template-columns: 62px minmax(0, 1fr) 58px; gap: 9px; padding-inline: 9px; }
+  .stage-bubble { width: 62px; }
+  .stage-start { width: 58px; }
+  .stage-copy h2 { font-size: 15px; }
+  .stage-copy p { font-size: 12px; }
+  .header-caption { font-size: 12px; }
+  .profile-link { flex-basis: 54px; width: 54px; height: 54px; }
+  .stage-list { margin-top: 55px; gap: 26px; }
+}
+@media (max-width: 280px) {
+  .stage-card { grid-template-columns: minmax(0, 1fr) 58px; }
+  .stage-card > .stage-bubble { display: none; }
+  .bottom-nav { padding-inline: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .favorite svg { transition: none; }
+}
+
+/* Stage artwork keeps the existing responsive circle and purple border. */
+.stage-bubble.stage-photo { overflow:hidden; background:#fffaf2; }
+.stage-photo img { display:block; width:100%; height:100%; object-fit:cover; object-position:50% 20%; }
+    </style>
+    <!-- Internal styles: instructions.css -->
+    <style data-source="instructions.css">
+.instructions-screen {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: max(21px, env(safe-area-inset-top)) 24px calc(142px + env(safe-area-inset-bottom));
+  font-family: Arial, sans-serif;
+}
+
+.instructions-header {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 66px;
+  gap: 8px;
+  align-items: center;
+}
+
+.back-link {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  margin-left: -8px;
+  align-self: start;
+  margin-top: 5px;
+  color: #363634;
+}
+
+.back-link svg { width: 22px; height: 22px; }
+.instructions-heading h1 { margin: 0; color: #363634; font-size: 16px; font-weight: 700; line-height: 22px; letter-spacing: 0; }
+.instructions-heading p { margin: 0; color: #858580; font-size: 14px; line-height: 21px; }
+
+.instructions-list {
+  display: grid;
+  gap: 26px;
+  margin: 64px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.instructions-list li { display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; gap: 19px; }
+.instruction-icon { display: block; width: 44px; height: 44px; margin-inline: auto; fill: currentColor; color: #e5a000; }
+.instructions-list p { margin: 0; color: #858580; font-size: 14px; line-height: 21px; overflow-wrap: break-word; }
+.instructions-next { width: calc(100% - 28px); min-height: 74px; margin: 69px 0 0 4px; border-radius: 22px; }
+.instructions-screen .bottom-nav { color: #82472e; }
+
+@media (max-width: 370px) {
+  .instructions-screen { padding-inline: 18px; }
+  .instructions-header { grid-template-columns: 30px minmax(0, 1fr) 54px; gap: 6px; }
+  .instructions-heading p { font-size: 12px; }
+  .instructions-list { margin-top: 44px; gap: 24px; }
+  .instructions-list li { grid-template-columns: 40px minmax(0, 1fr); gap: 15px; }
+  .instruction-icon { width: 40px; height: 40px; }
+  .instructions-next { width: 100%; margin-left: 0; margin-top: 42px; }
+}
+
+@media (max-height: 740px) {
+  .instructions-list { margin-top: 36px; gap: 22px; }
+  .instructions-next { margin-top: 36px; }
+}
+
+    </style>
+    <!-- Internal styles: instructions-stage-2.css -->
+    <style data-source="instructions-stage-2.css">
+/* Stage 2 uses the shared screen, button, and navigation styles. */
+.instructions-list { gap: 34px; }
+@media (max-width: 370px) {
+  .instructions-list { gap: 28px; }
+}
+@media (max-height: 740px) {
+  .instructions-list { gap: 22px; }
+}
+    </style>
+      <!-- Shared phone, tablet, landscape, and touch-control layouts. -->
+    <!-- Internal styles: responsive.css -->
+    <style data-source="responsive.css">
+/* Shared device layouts. Loaded LAST so each page keeps its original theme.
+   Phones use the full available width; tablet content is capped for readability. */
+:root { --app-max-width: 1040px; --nav-clearance: calc(128px + env(safe-area-inset-bottom)); }
+html { min-inline-size: 0; scroll-padding-bottom: var(--nav-clearance); }
+body { min-width: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+:where(button, a, input, select) { -webkit-tap-highlight-color: transparent; }
+:where(button, a) { touch-action: manipulation; }
+:where(h1, h2, p, label, figcaption) { overflow-wrap: break-word; }
+/* 16px input text avoids unwanted focus zoom on mobile browsers. */
+.signup-screen .field input, .signup-screen .field select,
+.profile-field input, .profile-field select, .password-form input { font-size: 16px; }
+.welcome, .signup-screen, .home-app, .instructions-screen,
+.settings-screen, .sound-screen, .profile-screen { max-width: var(--app-max-width); }
+.home-app, .instructions-screen { padding-bottom: calc(var(--nav-clearance) + 28px); }
+.bottom-nav, .lesson-nav {
+  position: fixed;
+  z-index: 5;
+  inset: auto auto 0 50%;
+  transform: translateX(-50%);
+  width: min(100%, var(--app-max-width));
+  min-height: 104px;
+  padding: 16px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.bottom-nav a, .lesson-nav a { min-width: 0; min-height: 64px; justify-content: center; text-align: center; }
+.bottom-nav svg, .lesson-nav svg { flex-shrink: 0; }
+.sound-screen { padding-bottom: var(--nav-clearance); }
+.lesson-content { padding-inline: clamp(16px, 5vw, 40px); }
+.lesson-tip p { min-width: 0; }
+.sound-card h2 { align-items: flex-start; }
+.sound-card h2::before { margin-top: .35em; }
+.sound-bubble { white-space: nowrap; overflow-wrap: normal; word-break: normal; padding-inline: 4px; }
+.stage-start { min-height: 44px; }
+.mute-button { min-height: 44px; }
+.gain-stepper button { width: 44px; min-height: 44px; }
+#gain-slider { min-height: 44px; }
+.gain-heading, .calibration-heading { flex-wrap: wrap; }
+.gain-gauge { max-width: 100%; }
+.gain-scale { flex-wrap: wrap; }
+.lesson-pagination { gap: clamp(16px, 5vw, 40px); }
+.lesson-pagination .start-button { min-width: 0; }
+.stage-copy, .learner-details, .settings-row > span:first-child { min-width: 0; }
+.settings-row { overflow-wrap: break-word; }
+.profile-card, .profile-confirmation { min-width: 0; }
+.profile-fields, .profile-form, .profile-field, .signup-form, .field { min-width: 0; }
+.photo-input { max-width: 100%; }
+.overlay, .settings-overlay { padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+.detail-panel, .settings-panel { max-height: calc(100dvh - 48px); overscroll-behavior: contain; }
+
+/* Narrow phones: keep words and form fields readable rather than squeezing them. */
+@media (max-width: 359px) {
+  .signup-screen { padding-inline: 20px; }
+  .age-fields { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .settings-row { padding-inline: 16px; font-size: 18px; }
+  .gain-heading h2 { font-size: 16px; }
+  .lesson-tip { gap: 4px; padding-inline: 10px; }
+  .wide-break { display: none; }
+}
+@media (max-width: 280px) {
+  .instructions-heading p { font-size: 11px; }
+  .instructions-header { grid-template-columns: 28px minmax(0, 1fr) 44px; }
+  .profile-link { width: 44px; height: 44px; flex-basis: 44px; }
+  .profile-age-control { grid-template-columns: minmax(0, 1fr); }
+  .lesson-pagination .start-button { font-size: 14px; padding-inline: 8px; }
+  .activity-rings { gap: 5px; }
+  .activity-ring figcaption { padding: 8px; }
+}
+
+/* Tablet portrait and landscape. The sound grids wrap naturally with available space. */
+@media (min-width: 600px) {
+  .welcome { max-width: 600px; padding-top: clamp(40px, 8svh, 90px); }
+  .brand { width: 430px; max-width: 100%; margin-inline: auto; }
+  .welcome h1 { font-size: 36px; }
+  .welcome .description { max-width: 450px; font-size: 16px; }
+  .welcome .start-button { max-width: 420px; }
+  .signup-screen { max-width: 640px; padding: 48px 48px max(40px, env(safe-area-inset-bottom)); }
+  .signup-form { margin-top: 36px; }
+  .age-fields { gap: 24px; }
+  .social-button { font-size: 16px; }
+  .home-app, .instructions-screen, .settings-screen { padding-inline: 32px; padding-top: max(32px, env(safe-area-inset-top)); }
+  .home-header { gap: 24px; }
+  .header-caption { font-size: 16px; }
+  .greeting strong { font-size: 26px; }
+  .stage-list { margin-top: 44px; }
+  .stage-card { min-height: 132px; }
+  .instructions-screen { max-width: 840px; }
+  .instructions-heading h1 { font-size: 22px; }
+  .instructions-heading p { font-size: 16px; }
+  .instructions-list { max-width: 680px; margin: 48px auto 0; gap: 30px; }
+  .instructions-list li { grid-template-columns: 52px minmax(0, 1fr); gap: 24px; }
+  .instructions-list p { font-size: 17px; line-height: 1.6; }
+  .instruction-icon { width: 48px; height: 48px; }
+  .instructions-next { width: 100%; max-width: 420px; margin: 44px auto 0; }
+  .profile-screen { max-width: 1040px; padding-inline: 32px; }
+  .profile-card, .profile-confirmation { max-width: 560px; padding: 28px 32px 36px; }
+  .profile-header h1 { font-size: 22px; }
+  .profile-fields { gap: 20px; }
+  .profile-field > label { font-size: 16px; }
+  .learner-summary { align-items: center; margin-top: 30px; }
+  .learner-details h1 { font-size: 24px; }
+  .edit-details { font-size: 16px; }
+  .overall-progress { margin-top: 40px; }
+  .activity-rings { max-width: 520px; margin-inline: auto; gap: 36px; }
+  .activity-ring span { font-size: 16px; }
+  .activity-ring strong { font-size: 20px; }
+  .settings-options { gap: 24px; }
+  .settings-row { min-height: 84px; padding-inline: 22px; font-size: 21px; }
+  .lesson-header { min-height: 108px; }
+  .lesson-header h1 { font-size: 22px; }
+  .lesson-header p { font-size: 17px; }
+  .lesson-content { padding-inline: 40px; }
+  .lesson-tip { max-width: 640px; margin-inline: auto; }
+  .lesson-tip p { font-size: 17px; }
+  .playback-status { font-size: 14px; }
+  .sound-card, .stage-two-card, .stage-three-card { padding: 24px 28px 32px; }
+  .sound-card + .sound-card, .stage-three-card + .stage-three-card { margin-top: 36px; }
+  .sound-card h2, .stage-two-card h2, .stage-three-card h2 { font-size: 24px; }
+  .sound-buttons, .stage-two-card .sound-buttons, .stage-three-card .sound-buttons {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 30px;
+  }
+  .single-sound .sound-buttons { justify-content: flex-start; padding-left: 24px; }
+  .sound-bubble { flex: 0 0 124px; width: 124px; height: 130px; font-size: 22px; }
+  .gain-card { max-width: 560px; margin-inline: auto; padding: 24px 30px; }
+  .gain-heading h2 { font-size: 23px; }
+  .gain-gauge { width: 220px; height: 220px; }
+  .calibration-heading { font-size: 14px; }
+  .gain-stepper span { font-size: 11px; }
+  .gain-help { font-size: 12px; }
+  .lesson-pagination { max-width: 560px; margin-inline: auto; }
+  .bottom-nav a, .lesson-nav a { font-size: 16px; }
+  .bottom-nav svg, .lesson-nav svg { width: 30px; height: 30px; }
+  .detail-panel, .settings-panel { max-width: 560px; padding: 36px; }
+}
+@media (min-width: 700px) {
+  .stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+  .stage-card { grid-template-columns: 64px minmax(0, 1fr) 65px; gap: 12px; }
+  .stage-card .stage-bubble { width: 64px; }
+  .settings-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) {
+  .home-app, .settings-screen { padding-inline: 48px; }
+  .stage-card { grid-template-columns: 78px minmax(0, 1fr) 72px; }
+  .stage-card .stage-bubble { width: 78px; }
+  .stage-copy h2 { font-size: 18px; }
+  .stage-copy p { font-size: 15px; }
+  .stage-start { width: 72px; }
+}
+/* Scroll short landscape screens normally; fixed navigation has reserved space. */
+@media (max-height: 600px) and (orientation: landscape) {
+  .welcome { padding-top: 24px; }
+  .brand { max-width: 300px; margin-inline: auto; }
+  .welcome h1 { margin-top: 20px; }
+  .home-app, .instructions-screen, .settings-screen, .signup-screen { padding-top: max(20px, env(safe-area-inset-top)); }
+  .profile-screen { place-items: start center; }
+  .instructions-list, .stage-list { margin-top: 28px; }
+  .instructions-next { margin-top: 28px; }
+}
+    </style>
+      <!-- Internal styles: theme.css -->
+    <style data-source="theme.css">
+/* Shared dark palette for every screen. Light mode retains each page design. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #242620;
+  --ink: #f7efdf;
+  --muted: #c3bcae;
+  --home-ink: #efd2b5;
+  --settings-text: #f7efdf;
+  --settings-brown: #efd2b5;
+  --settings-muted: #c3bcae;
+  --settings-card: #37382f;
+  --settings-accent: #ff896b;
+  --settings-track: #4c4f44;
+  --settings-line: #515346;
+  --theme-card: #33382e;
+  --theme-raised: #2b3027;
+  --theme-link: #9ccaff;
+  background: var(--canvas);
+  color: var(--ink);
+}
+:root[data-theme="dark"] body { background: var(--canvas); color: var(--ink); }
+:root[data-theme="dark"] :is(.signup-screen, .social-button, .profile-header h1, .profile-back,
+ .back-link, .instructions-heading h1, .lesson-header h1, .sound-card h2, .gain-heading h2,
+ .gain-scale span:nth-child(2), .gauge-value output, .apple-icon) { color: var(--ink); }
+:root[data-theme="dark"] :is(.description, .login-intro, .service-note, .photo-input,
+ .profile-field > label, .profile-confirmation p, .instructions-heading p, .instructions-list p,
+ .lesson-header p, .playback-status, .gain-help, .gain-scale, .gauge-value > span,
+ .gain-stepper span, .demo-note, .sound-note, .preview-note) { color: var(--muted); }
+:root[data-theme="dark"] :is(.signup-panel h1, .form-confirmation h1, #login-title,
+ .profile-confirmation h2) { color: #91caff; }
+:root[data-theme="dark"] :is(.login-prompt, .home-link, .auth-back) { color: var(--theme-link); }
+:root[data-theme="dark"] .separator { color: var(--theme-link); }
+:root[data-theme="dark"] .separator::before,
+:root[data-theme="dark"] .separator::after { background: var(--theme-link); }
+:root[data-theme="dark"] :is(.bottom-nav, .lesson-nav, .lesson-header) { background: var(--theme-raised); }
+:root[data-theme="dark"] :is(.bottom-nav a, .lesson-nav a) { color: var(--home-ink); }
+:root[data-theme="dark"] :is(.bottom-nav, .lesson-nav) { box-shadow: 0 -12px 28px #0005; }
+:root[data-theme="dark"] :is(.profile-link, .profile-avatar) { background: var(--theme-card); color: #d9ddcf; border-color: #535a48; }
+:root[data-theme="dark"] .profile-avatar svg { stroke: #d9ddcf; }
+:root[data-theme="dark"] .stage-card::before,
+:root[data-theme="dark"] :is(.sound-card, .lesson-tip, .gain-card,
+ .profile-card, .profile-confirmation) { background: var(--theme-card); }
+:root[data-theme="dark"] :is(.sound-card, .gain-card) { border-color: #9e7e38; }
+:root[data-theme="dark"] :is(.detail-panel, .settings-panel) { background: var(--theme-raised); }
+:root[data-theme="dark"] :is(.lesson-tip p, .detail-panel, .settings-panel) { color: var(--ink); }
+:root[data-theme="dark"] :is(.field input, .field select, .profile-field input,
+ .profile-field select, .password-form input) { background: var(--theme-raised); color: var(--ink); border-color: #7994d3; }
+:root[data-theme="dark"] :is(.field input, .profile-field input, .password-form input)::placeholder { color: #b5bba9; }
+:root[data-theme="dark"] .social-button { border-color: #829de4; }
+:root[data-theme="dark"] .social-button:not(:disabled):hover { background: var(--theme-card); }
+:root[data-theme="dark"] .auth-status { background: #4b302b; color: #ffd5cb; }
+:root[data-theme="dark"] .auth-status.is-success { background: #254638; color: #c2f2d6; }
+:root[data-theme="dark"] .confirmation-mark,
+:root[data-theme="dark"] .confirmation-check { background: #254638; color: #b5eccd; }
+:root[data-theme="dark"] .photo-input::file-selector-button { background: var(--theme-raised); color: var(--ink); border-color: #647052; }
+:root[data-theme="dark"] .photo-label { color: #ffa17d; }
+:root[data-theme="dark"] .gauge-track { stroke: #b0b7a7; }
+:root[data-theme="dark"] .gain-stepper button { background: #4c5443; color: var(--ink); }
+:root[data-theme="dark"] .gauge-fill { stroke: #91df49; }
+:root[data-theme="dark"] .gain-gauge.is-muted .gauge-fill { stroke: #89917f; }
+:root[data-theme="dark"] :is(.lesson-divider, .settings-divider) { border-color: #776c47; }
+/* Preserve the supplied raster logo's colors inside a deliberate image tile. */
+:root[data-theme="dark"] .brand { border-radius: 24px; background: #f7f1e5; box-shadow: 0 10px 26px #0004; }
+    </style>
+      <!-- Internal styles: stage-access.css -->
+    <style data-source="stage-access.css">
+/* Stage access: disabled by default; enabled only after server verification. */
+.stage-start[aria-disabled="true"] {
+  background: #d9d1bf; color: #655f53; box-shadow: inset 0 1px 2px #fff8, 0 2px 2px #574f3433;
+  cursor: not-allowed; font-size: 12px; text-align: center;
+}
+.stage-start[aria-disabled="true"]::before { display:none; }
+.stage-start[aria-disabled="true"]:active { transform:none; }
+.stage-card.is-locked .stage-bubble { background:#c7c5bf; border-color:#a49c90; box-shadow:none; }
+.stage-lock-note { margin-top:8px !important; font-size:11px !important; font-weight:700; line-height:1.4 !important; }
+.stage-card.is-current-stage::before { outline:2px solid #329c83; outline-offset:2px; }
+.stage-access-message { max-width:960px; margin:24px auto; padding:14px 16px; border:1px solid #b8c9c1; border-radius:12px; background:#e7eee1; color:#365748; font:14px / 1.6 Arial,sans-serif; }
+.home-app > .stage-access-message { margin-bottom:0; }
+.stage-access-message a { color:inherit; font-weight:700; text-underline-offset:3px; }
+.all-levels-links .is-stage-locked { color:#898680; text-decoration:none; cursor:not-allowed; }
+:root[data-required-stage]:not([data-required-stage="1"]):not([data-required-stage="2"]):not([data-required-stage="3"]):not([data-stage-authorized="true"]) :is(.lesson-content,.instructions-list,.instructions-next) { display:none; }
+:root[data-theme="dark"] .stage-start[aria-disabled="true"] { background:#55574b; color:#e1ddcf; }
+:root[data-theme="dark"] .stage-card.is-locked .stage-bubble { background:#676e60; border-color:#929785; }
+:root[data-theme="dark"] .stage-access-message { background:#2d3d30; color:#e0efda; border-color:#5e795d; }
+:root[data-theme="dark"] .all-levels-links .is-stage-locked { color:#b9bdaf; }
+.start-button[aria-disabled="true"] { background:#d9d1bf; color:#655f53; border-color:#b5ac99; box-shadow:0 3px 4px #574f3433; cursor:not-allowed; }
+.start-button[aria-disabled="true"]:active { transform:none; }
+:root[data-theme="dark"] .start-button[aria-disabled="true"] { background:#55574b; color:#e1ddcf; border-color:#737865; }
+    </style>
+    <!-- stage-access.js is embedded at the end of this page. -->
+  </head>
+  <body>
+    <svg
+      class="icon-definitions"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <symbol id="icon-back" viewBox="0 0 24 24">
+          <path d="M20 12H4m7-7-7 7 7 7" />
+        </symbol>
+        <symbol id="icon-user" viewBox="0 0 36 36">
+          <circle cx="18" cy="10" r="5.2" />
+          <path
+            d="M10.5 22h15a6 6 0 0 1 6 6v2.5a2 2 0 0 1-2 2h-23a2 2 0 0 1-2-2V28a6 6 0 0 1 6-6Z"
+          />
+        </symbol>
+        <symbol id="icon-home" viewBox="0 0 32 32">
+          <path
+            d="m5 13 11-9 11 9v13a2 2 0 0 1-2 2h-6v-8h-6v8H7a2 2 0 0 1-2-2Z"
+          />
+        </symbol>
+        <symbol id="icon-levels" viewBox="0 0 32 32">
+          <path d="m3 11 13-8 13 8-13 8Z" />
+          <path d="m6 15-3 2 13 8 13-8-3-2M6 21l-3 2 13 8 13-8-3-2" />
+        </symbol>
+        <symbol id="icon-settings" viewBox="0 0 32 32">
+          <path
+            d="m12 3-1 4-3 1-4-1-3 5 3 3v3l-3 3 3 5 4-1 3 1 1 4h7l1-4 3-1 4 1 3-5-3-3v-3l3-3-3-5-4 1-3-1-1-4Z"
+          />
+          <circle cx="15.5" cy="16.5" r="6" />
+        </symbol>
+        <symbol id="icon-info" viewBox="0 0 48 48">
+          <circle cx="24" cy="24" r="21" />
+          <text
+            x="24"
+            y="38"
+            text-anchor="middle"
+            font-family="Georgia, serif"
+            font-size="39"
+            fill="#fff8e9"
+          >
+            i
+          </text>
+        </symbol>
+        <symbol id="icon-hourglass" viewBox="0 0 48 48">
+          <path
+            d="M12 3h24a4 4 0 0 1 4 4v3c0 3-9 12-12 15 3 4 12 13 12 16v2a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3v-2c0-3 9-12 12-16C17 22 8 13 8 10V7a4 4 0 0 1 4-4Z"
+          />
+          <path
+            d="M18 38h12"
+            fill="none"
+            stroke="#fff8e9"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+        </symbol>
+        <symbol id="icon-headphones" viewBox="0 0 48 48">
+          <path
+            d="M4 27v-4a20 20 0 0 1 40 0v20a3 3 0 0 1-3 3H29V31h8v-8a13 13 0 0 0-26 0v8h8v15H7a3 3 0 0 1-3-3Z"
+          />
+        </symbol>
+        <symbol id="icon-star" viewBox="0 0 48 48">
+          <path d="m24 2 7 15 16 2-12 12 3 16-14-8-14 8 3-16L1 19l16-2Z" />
+        </symbol>
+        <symbol id="icon-sound" viewBox="0 0 48 48">
+          <path d="M4 17h10l9-7v29l-9-7H4Z" />
+          <path
+            d="M28 15c5 5 5 13 0 18m6-24c9 9 9 21 0 30m5-35c12 12 12 28 0 40"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+        </symbol>
+        <symbol id="icon-order" viewBox="0 0 48 48">
+          <rect x="3" y="3" width="42" height="42" rx="13" />
+          <path
+            d="M17 15v19m-6-6 6 6 6-6m8 6V15m-6 6 6-6 6 6"
+            fill="none"
+            stroke="#fff8e9"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </symbol>
+        <symbol id="icon-play" viewBox="0 0 48 48">
+          <path
+            d="M8 5a4 4 0 0 1 6-3l30 18a4.5 4.5 0 0 1 0 8L14 46a4 4 0 0 1-6-3Z"
+          />
+        </symbol>
+        <symbol id="icon-repeat" viewBox="0 0 48 48">
+          <path
+            d="M41 17A18 18 0 1 0 37 38"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="5"
+          />
+          <path d="M32 18h15V3Z" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="instructions-screen">
+      <header class="instructions-header">
+        <!-- Replace # with your previous screen file path. -->
+        <a class="back-link" href="#" aria-label="Go back"
+          ><svg class="line-icon" aria-hidden="true">
+            <use href="#icon-back" /></svg
+        ></a>
+        <div class="instructions-heading">
+          <h1 id="instructions-title">Instructions</h1>
+          <p>Before starting the game</p>
+        </div>
+        <!-- Replace # with your profile file path, e.g. profile.html. -->
+        <a class="profile-link" href="#" aria-label="Open learner profile"
+          ><svg class="line-icon" aria-hidden="true">
+            <use href="#icon-user" /></svg
+        ></a>
+      </header>
+
+      <main aria-labelledby="instructions-title">
+        <ul class="instructions-list" aria-label="Stage 2 instructions">
+          <li>
+            <svg class="instruction-icon" aria-hidden="true">
+              <use href="#icon-info" />
+            </svg>
+            <p>
+              Repeat vowel containing words often to support the child&#8217;s
+              speech development.
+            </p>
+          </li>
+          <li>
+            <svg class="instruction-icon" aria-hidden="true">
+              <use href="#icon-sound" />
+            </svg>
+            <p>
+              Listen to surrounding sounds at a normal volume, not at low
+              volume.
+            </p>
+          </li>
+          <li>
+            <svg class="instruction-icon" aria-hidden="true">
+              <use href="#icon-play" />
+            </svg>
+            <p>
+              Encourage the child to repeat &#8220;other sounds&#8221; section
+              independently.
+            </p>
+          </li>
+          <li>
+            <svg class="instruction-icon" aria-hidden="true">
+              <use href="#icon-repeat" />
+            </svg>
+            <p>
+              Repeating sounds encourages the child and makes listening
+              enjoyable.
+            </p>
+          </li>
+          <li>
+            <svg class="instruction-icon" aria-hidden="true">
+              <use href="#icon-star" />
+            </svg>
+            <p>
+              Move to the next stage only after your child learns the words and
+              completes the current stage.
+            </p>
+          </li>
+          <li>
+            <svg class="instruction-icon" aria-hidden="true">
+              <use href="#icon-order" />
+            </svg>
+            <p>
+              Follow the sounds in the given order to make learning easier for
+              your child.
+            </p>
+          </li>
+        </ul>
+
+        <!-- Replace # with the next screen's file path, e.g. stage-2.html. -->
+        <a class="start-button instructions-next" href="#">Next</a>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Main navigation">
+        <a href="home.html"
+          ><svg class="line-icon" aria-hidden="true">
+            <use href="#icon-home" /></svg
+          ><span>Home</span></a
+        >
+        <a href="home.html#levels"
+          ><svg class="line-icon" aria-hidden="true">
+            <use href="#icon-levels" /></svg
+          ><span>Stages</span></a
+        >
+        <a href="settings.html"
+          ><svg class="line-icon" aria-hidden="true">
+            <use href="#icon-settings" /></svg
+          ><span>Settings</span></a
+        >
+      </nav>
+    </div>
+      <!-- Internal script: stage-access.js -->
+    <script data-source="stage-access.js">
+'use strict';
+// Locked stages stay disabled until server-verified hearing-age access arrives.
+(() => {
+  const root = document.documentElement;
+  const required = Number(root.dataset.requiredStage || 0);
+  function notify(text, login = false) {
+    let message = document.getElementById('stage-access-message');
+    if (!message) {
+      message = document.createElement('p');
+      message.id = 'stage-access-message'; message.className = 'stage-access-message';
+      message.setAttribute('role','status');
+      const host = document.querySelector('.home-app main,.lesson-content,.instructions-screen main') || document.body;
+      host.before(message);
+    }
+    message.textContent = text;
+    if (login) {
+      const link = document.createElement('a'); link.href = 'login.html'; link.textContent = ' Log in';
+      message.append(link);
+    }
+  }
+  const ready = (async () => {
+    try {
+      if (!['http:','https:'].includes(location.protocol)) throw Error('Open the app through its backend to check stage access.');
+      const response = await fetch('/api/stages',{credentials:'same-origin',cache:'no-store'});
+      if (!response.ok) throw Error('Stage access could not be checked. Please refresh and try again.');
+      const access = await response.json();
+      const byNumber = new Map(access.stages.map(stage => [stage.number,stage]));
+      for (const link of document.querySelectorAll('[data-stage-link]')) {
+        const number = Number(link.dataset.stageLink);
+        const stage = byNumber.get(number);
+        const enabled = !!(stage?.unlocked && stage.available);
+        const card = link.closest('.stage-card');
+        if (card) {
+          card.classList.toggle('is-locked', !stage?.unlocked);
+          card.classList.toggle('is-current-stage', !!stage?.current);
+          let note = card.querySelector('.stage-lock-note');
+          if (!note) { note=document.createElement('p');note.className='stage-lock-note';card.querySelector('.stage-copy').append(note); }
+          note.textContent = number === 1 ? 'Always available' : stage?.previewOpen ? 'Temporarily unlocked' : !access.authenticated ? 'Log in to unlock' : !stage?.unlocked ? `Unlocks at ${stage?.minMonths ?? 0} hearing months` : !stage.available ? 'Lessons coming soon' : stage.current ? 'Current stage' : 'Available for practice';
+        }
+        if (enabled) {
+          link.href = stage.path;link.removeAttribute('aria-disabled');link.removeAttribute('tabindex');
+          link.classList.remove('is-stage-locked');link.title='';
+        } else {
+          link.removeAttribute('href');link.setAttribute('aria-disabled','true');link.setAttribute('tabindex','-1');
+          link.classList.add('is-stage-locked');
+          link.title = !access.authenticated ? 'Log in to unlock stages.' : !stage?.unlocked ? `Unlocks at ${stage?.minMonths ?? 0} months of hearing age.` : 'This lesson is coming soon.';
+        }
+        if (link.classList.contains('stage-start')) {
+          link.textContent = enabled ? 'Start' : stage?.unlocked ? 'Coming soon' : 'Locked';
+          link.setAttribute('aria-label',`${link.textContent} stage ${number}`);
+        }
+      }
+      if (document.querySelector('.home-app')) {
+        if (!access.authenticated) notify('Stages 1, 2, and 3 are open for testing. Log in to unlock later stages using the saved hearing age.',true);
+        else if (access.hearingAgeMonths === null) notify('Stages 1, 2, and 3 are open for testing. Your saved profile needs a hearing age to unlock later stages.');
+        else {
+          const monthText = Number(access.hearingAgeMonths.toFixed(2));
+          notify(`Hearing age: ${monthText} months. Stages 1–3 are open for testing; later stages follow your saved hearing age.`);
+          const blocked = Number(new URLSearchParams(location.search).get('locked-stage'));
+          if (blocked && !byNumber.get(blocked)?.unlocked) notify(`Stage ${blocked} is locked. Your hearing age is ${monthText} months; this stage unlocks at ${byNumber.get(blocked)?.minMonths ?? '?'} months.`);
+        }
+      }
+      const authorized = required <= 3 || !!(access.authenticated && byNumber.get(required)?.unlocked);
+      if (authorized) root.dataset.stageAuthorized = 'true';
+      else {
+        notify(access.authenticated ? `Stage ${required} is locked for the saved hearing age.` : 'Log in to open this stage.',!access.authenticated);
+        if (access.authenticated) location.replace(`home.html?locked-stage=${required}#levels`);
+        else location.replace(`login.html?next=${encodeURIComponent(location.pathname.split('/').pop())}`);
+      }
+      return {...access,authorized};
+    } catch (error) {
+      if (required <= 3) root.dataset.stageAuthorized = 'true';
+      notify(error.message + ' Stages 1, 2, and 3 remain available; later stages stay locked.');
+      return {authenticated:false,stages:[],authorized:required <= 3};
+    }
+  })();
+  window.HearnestStageAccess = {ready};
+  // A restored page must recheck its session instead of trusting stale unlocks.
+  window.addEventListener('pageshow',event => {if(event.persisted)location.reload();});
+})();
+    </script>
+  </body>
+</html>

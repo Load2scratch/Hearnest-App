@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Restore display preference before the page paints. -->
+    <!-- Internal script: theme.js -->
+    <script data-source="theme.js">
+'use strict';
+// Run in <head> before styles: restore the saved theme before the first paint.
+// This stores only a display preference, never account information.
+(() => {
+  const key = 'hearnest.theme';
+  let current = 'light';
+  function savedTheme() {
+    try { const stored = localStorage.getItem(key); if (stored === 'dark' || stored === 'light') return stored; } catch {}
+    try {
+      const cookie = document.cookie.split('; ').find(item => item.startsWith('hearnest_theme='));
+      return cookie?.split('=')[1] === 'dark' ? 'dark' : 'light';
+    } catch { return 'light'; }
+  }
+  function apply(theme, persist = false) {
+    if (theme !== 'dark' && theme !== 'light') return;
+    current = theme;
+    document.documentElement.dataset.theme = theme;
+    const checkbox = document.getElementById('dark-mode');
+    if (checkbox) checkbox.checked = theme === 'dark';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      if (!meta.dataset.lightThemeColor) meta.dataset.lightThemeColor = meta.content;
+      meta.content = theme === 'dark' ? '#242620' : meta.dataset.lightThemeColor;
+    }
+    if (persist) {
+      try { localStorage.setItem(key, theme); } catch {}
+      // Cookie fallback preserves the preference when localStorage is restricted.
+      try { if (location.protocol === 'http:' || location.protocol === 'https:') document.cookie = `hearnest_theme=${theme}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === 'https:' ? '; Secure' : ''}`; } catch {}
+    }
+  }
+  apply(savedTheme());
+  document.addEventListener('DOMContentLoaded', () => {
+    apply(savedTheme());
+    document.getElementById('dark-mode')?.addEventListener('change', event => apply(event.target.checked ? 'dark' : 'light', true));
+  });
+  // Keep other tabs and browser Back/Forward restorations in sync.
+  window.addEventListener('storage', event => { if (event.key === key) apply(event.newValue === 'dark' ? 'dark' : 'light'); });
+  window.addEventListener('pageshow', () => apply(savedTheme()));
+  window.HearnestTheme = { set: theme => apply(theme, true), get: () => current };
+})();
+    </script>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f7f1e5" />
+    <title>Sign up · HEARNEST</title>
+    <!-- Internal styles: styles.css -->
+    <style data-source="styles.css">
+:root {
+  color-scheme: light;
+  --canvas: #f7f1e5;
+  --ink: #291b0b;
+  --muted: #898680;
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", Arial, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 240px;
+}
+
+.welcome {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: max(28px, min(13.73svh, 128px)) 20px max(32px, 7.2svh);
+  padding-top: max(env(safe-area-inset-top), min(13.73svh, 128px), 28px);
+  padding-bottom: max(env(safe-area-inset-bottom), 7.2svh, 32px);
+  text-align: center;
+}
+
+/* The supplied artwork is shown in its original proportions. The viewport
+   crops away the reference's text and button, which are real HTML below. */
+.brand {
+  position: relative;
+  width: calc(100% + 40px);
+  aspect-ratio: 430 / 412;
+  margin-inline: -20px;
+  overflow: hidden;
+}
+
+.brand img {
+  position: absolute;
+  top: -31.067961%;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+h1 {
+  margin: 40px 0 0;
+  font-size: clamp(25px, 7.45vw, 32px);
+  font-weight: 900;
+  line-height: 1.23;
+  letter-spacing: -1.05px;
+}
+
+.description {
+  max-width: 365px;
+  margin: 24px auto 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-wrap: pretty;
+  color: var(--muted);
+}
+
+.start-button {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 36px);
+  min-height: 74px;
+  margin: clamp(32px, 7.3svh, 68px) auto 0;
+  padding: 18px 24px;
+  overflow: hidden;
+  border: 0;
+  border-top: 3px solid #0788ff;
+  border-radius: 23px;
+  background: linear-gradient(180deg, #0877f9 0%, #0754d8 24%, #1137ac 66%, #14248e 100%);
+  box-shadow: inset 0 5px 5px -2px #a4e1ff, inset 0 -2px 3px #2430a2, 0 6px 4px -1px #0005;
+  color: #fff;
+  font: 800 16px / 1.25 "Trebuchet MS", Arial, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-decoration: none;
+}
+
+.start-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+  right: 9px;
+  left: 9px;
+  height: 17px;
+  border-radius: 50%;
+  background: linear-gradient(#a1d7ff9c, #78bfff00);
+  filter: blur(2px);
+}
+
+.start-button::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 33px;
+  width: 12px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d5f3ff;
+  box-shadow: -9px 7px 0 -0.5px #9ad3ff;
+  transform: rotate(-14deg);
+}
+
+.start-button:focus-visible {
+  outline: 3px solid #006cce;
+  outline-offset: 5px;
+}
+
+.start-button:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 4px 5px -2px #a4e1ff, 0 3px 3px #0005;
+}
+
+@media (max-width: 350px), (max-height: 700px) {
+  .welcome { padding-top: max(24px, env(safe-area-inset-top)); }
+  h1 { margin-top: 24px; }
+  .description { margin-top: 18px; font-size: 13px; }
+  .start-button { width: calc(100% - 16px); min-height: 64px; margin-top: 32px; }
+}
+
+    </style>
+    <!-- Internal styles: signup.css -->
+    <style data-source="signup.css">
+.signup-screen {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: max(70px, env(safe-area-inset-top)) 40px max(30px, env(safe-area-inset-bottom));
+  font-family: Arial, sans-serif;
+  color: #693f25;
+}
+
+.signup-panel {
+  position: static;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+}
+
+.signup-panel h1,
+.form-confirmation h1 {
+  margin: 0;
+  color: #216fa4;
+  text-align: center;
+  font: 800 clamp(30px, 9.3vw, 40px) / 1.2 Arial, sans-serif;
+  letter-spacing: -1px;
+}
+
+.signup-form { margin: 38px 5px 0; }
+.field { display: flex; flex-direction: column; gap: 15px; min-width: 0; }
+.field label { font-size: 16px; font-weight: 700; line-height: 20px; }
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  border: 1px solid #4d79ff;
+  border-radius: 12px;
+  padding: 14px 11px;
+  background: transparent;
+  color: #432b1e;
+  font: 14px / 1.4 Arial, sans-serif;
+}
+
+.field input::placeholder { color: #a9abad; opacity: 1; }
+.field input:focus-visible { outline: 2px solid #2265e8; outline-offset: 3px; }
+.field input:user-invalid { border-color: #b92e2e; }
+.email-field { margin-top: 17px; gap: 9px; }
+.age-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; margin-top: 6px; }
+.age-fields .field { gap: 10px; }
+.age-fields input { font-size: 14px; padding-inline: 11px; }
+.age-fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid #4d79ff;
+  border-radius: 10px;
+  background: var(--canvas);
+  color: #693f25;
+  font: 14px / 1.4 Arial, sans-serif;
+}
+.age-fields select:focus-visible { outline: 2px solid #2265e8; outline-offset: 3px; }
+.password-field { margin-top: 22px; gap: 8px; }
+.password-field label { font-weight: 400; }
+.password-field input { padding-inline: 15px; }
+.forgot-row { display: flex; justify-content: flex-end; margin-top: 5px; }
+
+.text-button {
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: 700 13px / 1.4 Arial, sans-serif;
+}
+
+button:disabled { opacity: 1; cursor: not-allowed; }
+.signup-submit { width: calc(100% - 6px); min-height: 70px; margin-top: 36px; gap: 3px; border-radius: 21px; }
+.separator { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 23px 0 33px; color: #002b9f; font-size: 16px; line-height: 20px; }
+.separator::before, .separator::after { content: ""; width: 94px; height: 1.5px; background: #002b9f; }
+.social-options { display: flex; flex-direction: column; gap: 9px; }
+
+.social-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 51px;
+  padding: 12px;
+  border: 1px solid #315bc7;
+  border-radius: 12px;
+  background: transparent;
+  color: #693f25;
+  font: 700 14px / 1.4 Arial, sans-serif;
+}
+
+.provider-icon { flex: 0 0 24px; width: 24px; height: 24px; }
+.apple-icon { color: #272323; }
+.login-prompt { margin: 8px 0 0; text-align: center; color: #0053ec; font-size: 14px; line-height: 20px; }
+.login-prompt .text-button { color: inherit; font-size: inherit; font-weight: 400; }
+.service-note { margin: 5px 0 0; color: #898680; font-size: 11px; text-align: center; }
+.form-confirmation { display: none; padding-block: 80px 30px; text-align: center; }
+.signup-panel:not([open]) + .form-confirmation { display: block; }
+.form-confirmation h1 { margin-top: 22px; font-size: 32px; }
+.form-confirmation p { line-height: 1.6; font-size: 15px; }
+.form-confirmation .start-button { width: 100%; margin-top: 30px; }
+.confirmation-mark { display: inline-grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: #d8eee8; color: #158577; font-size: 36px; }
+.home-link { display: inline-block; margin-top: 24px; color: #0053ec; text-underline-offset: 4px; }
+
+@media (max-width: 370px) {
+  .signup-screen { padding-inline: 22px; }
+  .age-fields { gap: 18px; }
+  .age-fields input { font-size: 12px; }
+  .login-prompt { font-size: 13px; }
+}
+
+@media (max-height: 740px) {
+  .signup-screen { padding-top: max(30px, env(safe-area-inset-top)); }
+  .signup-form { margin-top: 26px; }
+  .signup-submit { margin-top: 24px; }
+  .separator { margin-block: 22px; }
+}
+
+    </style>
+      <!-- Shared phone, tablet, landscape, and touch-control layouts. -->
+    <!-- Internal styles: auth.css -->
+    <style data-source="auth.css">
+/* Account feedback matches the existing phone/tablet layout. */
+.auth-status { margin: 20px 0; padding: 12px 14px; border-radius: 10px; background: #f9dfd5; color: #8d3020; font: 14px / 1.5 Arial, sans-serif; overflow-wrap: anywhere; }
+.auth-status[hidden] { display: none; }
+.auth-status.is-success { color: #146b56; background: #dcefe4; }
+.social-button:not(:disabled):hover { background: #f1e8d8; }
+.social-button:not(:disabled), a.text-button { cursor: pointer; }
+.social-button:focus-visible, a.text-button:focus-visible { outline: 3px solid #216fa4; outline-offset: 4px; }
+.login-form { display: grid; gap: 24px; }
+.login-form .field { gap: 10px; }
+.login-form .signup-submit { margin-top: 12px; }
+.login-intro { margin: 14px 0 0; color: #898680; font: 15px / 1.6 Arial, sans-serif; text-align: center; }
+.auth-back { display: inline-block; min-height: 44px; margin-bottom: 20px; padding: 12px 0; color: #693f25; font-size: 14px; text-underline-offset: 4px; }
+.login-prompt a { min-height: 44px; display: inline-flex; align-items: center; }
+    </style>
+    <!-- Internal styles: responsive.css -->
+    <style data-source="responsive.css">
+/* Shared device layouts. Loaded LAST so each page keeps its original theme.
+   Phones use the full available width; tablet content is capped for readability. */
+:root { --app-max-width: 1040px; --nav-clearance: calc(128px + env(safe-area-inset-bottom)); }
+html { min-inline-size: 0; scroll-padding-bottom: var(--nav-clearance); }
+body { min-width: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+:where(button, a, input, select) { -webkit-tap-highlight-color: transparent; }
+:where(button, a) { touch-action: manipulation; }
+:where(h1, h2, p, label, figcaption) { overflow-wrap: break-word; }
+/* 16px input text avoids unwanted focus zoom on mobile browsers. */
+.signup-screen .field input, .signup-screen .field select,
+.profile-field input, .profile-field select, .password-form input { font-size: 16px; }
+.welcome, .signup-screen, .home-app, .instructions-screen,
+.settings-screen, .sound-screen, .profile-screen { max-width: var(--app-max-width); }
+.home-app, .instructions-screen { padding-bottom: calc(var(--nav-clearance) + 28px); }
+.bottom-nav, .lesson-nav {
+  position: fixed;
+  z-index: 5;
+  inset: auto auto 0 50%;
+  transform: translateX(-50%);
+  width: min(100%, var(--app-max-width));
+  min-height: 104px;
+  padding: 16px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.bottom-nav a, .lesson-nav a { min-width: 0; min-height: 64px; justify-content: center; text-align: center; }
+.bottom-nav svg, .lesson-nav svg { flex-shrink: 0; }
+.sound-screen { padding-bottom: var(--nav-clearance); }
+.lesson-content { padding-inline: clamp(16px, 5vw, 40px); }
+.lesson-tip p { min-width: 0; }
+.sound-card h2 { align-items: flex-start; }
+.sound-card h2::before { margin-top: .35em; }
+.sound-bubble { white-space: nowrap; overflow-wrap: normal; word-break: normal; padding-inline: 4px; }
+.stage-start { min-height: 44px; }
+.mute-button { min-height: 44px; }
+.gain-stepper button { width: 44px; min-height: 44px; }
+#gain-slider { min-height: 44px; }
+.gain-heading, .calibration-heading { flex-wrap: wrap; }
+.gain-gauge { max-width: 100%; }
+.gain-scale { flex-wrap: wrap; }
+.lesson-pagination { gap: clamp(16px, 5vw, 40px); }
+.lesson-pagination .start-button { min-width: 0; }
+.stage-copy, .learner-details, .settings-row > span:first-child { min-width: 0; }
+.settings-row { overflow-wrap: break-word; }
+.profile-card, .profile-confirmation { min-width: 0; }
+.profile-fields, .profile-form, .profile-field, .signup-form, .field { min-width: 0; }
+.photo-input { max-width: 100%; }
+.overlay, .settings-overlay { padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+.detail-panel, .settings-panel { max-height: calc(100dvh - 48px); overscroll-behavior: contain; }
+
+/* Narrow phones: keep words and form fields readable rather than squeezing them. */
+@media (max-width: 359px) {
+  .signup-screen { padding-inline: 20px; }
+  .age-fields { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .settings-row { padding-inline: 16px; font-size: 18px; }
+  .gain-heading h2 { font-size: 16px; }
+  .lesson-tip { gap: 4px; padding-inline: 10px; }
+  .wide-break { display: none; }
+}
+@media (max-width: 280px) {
+  .instructions-heading p { font-size: 11px; }
+  .instructions-header { grid-template-columns: 28px minmax(0, 1fr) 44px; }
+  .profile-link { width: 44px; height: 44px; flex-basis: 44px; }
+  .profile-age-control { grid-template-columns: minmax(0, 1fr); }
+  .lesson-pagination .start-button { font-size: 14px; padding-inline: 8px; }
+  .activity-rings { gap: 5px; }
+  .activity-ring figcaption { padding: 8px; }
+}
+
+/* Tablet portrait and landscape. The sound grids wrap naturally with available space. */
+@media (min-width: 600px) {
+  .welcome { max-width: 600px; padding-top: clamp(40px, 8svh, 90px); }
+  .brand { width: 430px; max-width: 100%; margin-inline: auto; }
+  .welcome h1 { font-size: 36px; }
+  .welcome .description { max-width: 450px; font-size: 16px; }
+  .welcome .start-button { max-width: 420px; }
+  .signup-screen { max-width: 640px; padding: 48px 48px max(40px, env(safe-area-inset-bottom)); }
+  .signup-form { margin-top: 36px; }
+  .age-fields { gap: 24px; }
+  .social-button { font-size: 16px; }
+  .home-app, .instructions-screen, .settings-screen { padding-inline: 32px; padding-top: max(32px, env(safe-area-inset-top)); }
+  .home-header { gap: 24px; }
+  .header-caption { font-size: 16px; }
+  .greeting strong { font-size: 26px; }
+  .stage-list { margin-top: 44px; }
+  .stage-card { min-height: 132px; }
+  .instructions-screen { max-width: 840px; }
+  .instructions-heading h1 { font-size: 22px; }
+  .instructions-heading p { font-size: 16px; }
+  .instructions-list { max-width: 680px; margin: 48px auto 0; gap: 30px; }
+  .instructions-list li { grid-template-columns: 52px minmax(0, 1fr); gap: 24px; }
+  .instructions-list p { font-size: 17px; line-height: 1.6; }
+  .instruction-icon { width: 48px; height: 48px; }
+  .instructions-next { width: 100%; max-width: 420px; margin: 44px auto 0; }
+  .profile-screen { max-width: 1040px; padding-inline: 32px; }
+  .profile-card, .profile-confirmation { max-width: 560px; padding: 28px 32px 36px; }
+  .profile-header h1 { font-size: 22px; }
+  .profile-fields { gap: 20px; }
+  .profile-field > label { font-size: 16px; }
+  .learner-summary { align-items: center; margin-top: 30px; }
+  .learner-details h1 { font-size: 24px; }
+  .edit-details { font-size: 16px; }
+  .overall-progress { margin-top: 40px; }
+  .activity-rings { max-width: 520px; margin-inline: auto; gap: 36px; }
+  .activity-ring span { font-size: 16px; }
+  .activity-ring strong { font-size: 20px; }
+  .settings-options { gap: 24px; }
+  .settings-row { min-height: 84px; padding-inline: 22px; font-size: 21px; }
+  .lesson-header { min-height: 108px; }
+  .lesson-header h1 { font-size: 22px; }
+  .lesson-header p { font-size: 17px; }
+  .lesson-content { padding-inline: 40px; }
+  .lesson-tip { max-width: 640px; margin-inline: auto; }
+  .lesson-tip p { font-size: 17px; }
+  .playback-status { font-size: 14px; }
+  .sound-card, .stage-two-card, .stage-three-card { padding: 24px 28px 32px; }
+  .sound-card + .sound-card, .stage-three-card + .stage-three-card { margin-top: 36px; }
+  .sound-card h2, .stage-two-card h2, .stage-three-card h2 { font-size: 24px; }
+  .sound-buttons, .stage-two-card .sound-buttons, .stage-three-card .sound-buttons {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 30px;
+  }
+  .single-sound .sound-buttons { justify-content: flex-start; padding-left: 24px; }
+  .sound-bubble { flex: 0 0 124px; width: 124px; height: 130px; font-size: 22px; }
+  .gain-card { max-width: 560px; margin-inline: auto; padding: 24px 30px; }
+  .gain-heading h2 { font-size: 23px; }
+  .gain-gauge { width: 220px; height: 220px; }
+  .calibration-heading { font-size: 14px; }
+  .gain-stepper span { font-size: 11px; }
+  .gain-help { font-size: 12px; }
+  .lesson-pagination { max-width: 560px; margin-inline: auto; }
+  .bottom-nav a, .lesson-nav a { font-size: 16px; }
+  .bottom-nav svg, .lesson-nav svg { width: 30px; height: 30px; }
+  .detail-panel, .settings-panel { max-width: 560px; padding: 36px; }
+}
+@media (min-width: 700px) {
+  .stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+  .stage-card { grid-template-columns: 64px minmax(0, 1fr) 65px; gap: 12px; }
+  .stage-card .stage-bubble { width: 64px; }
+  .settings-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) {
+  .home-app, .settings-screen { padding-inline: 48px; }
+  .stage-card { grid-template-columns: 78px minmax(0, 1fr) 72px; }
+  .stage-card .stage-bubble { width: 78px; }
+  .stage-copy h2 { font-size: 18px; }
+  .stage-copy p { font-size: 15px; }
+  .stage-start { width: 72px; }
+}
+/* Scroll short landscape screens normally; fixed navigation has reserved space. */
+@media (max-height: 600px) and (orientation: landscape) {
+  .welcome { padding-top: 24px; }
+  .brand { max-width: 300px; margin-inline: auto; }
+  .welcome h1 { margin-top: 20px; }
+  .home-app, .instructions-screen, .settings-screen, .signup-screen { padding-top: max(20px, env(safe-area-inset-top)); }
+  .profile-screen { place-items: start center; }
+  .instructions-list, .stage-list { margin-top: 28px; }
+  .instructions-next { margin-top: 28px; }
+}
+    </style>
+    <!-- auth.js is embedded at the end of this page. -->
+      <!-- Internal styles: theme.css -->
+    <style data-source="theme.css">
+/* Shared dark palette for every screen. Light mode retains each page design. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #242620;
+  --ink: #f7efdf;
+  --muted: #c3bcae;
+  --home-ink: #efd2b5;
+  --settings-text: #f7efdf;
+  --settings-brown: #efd2b5;
+  --settings-muted: #c3bcae;
+  --settings-card: #37382f;
+  --settings-accent: #ff896b;
+  --settings-track: #4c4f44;
+  --settings-line: #515346;
+  --theme-card: #33382e;
+  --theme-raised: #2b3027;
+  --theme-link: #9ccaff;
+  background: var(--canvas);
+  color: var(--ink);
+}
+:root[data-theme="dark"] body { background: var(--canvas); color: var(--ink); }
+:root[data-theme="dark"] :is(.signup-screen, .social-button, .profile-header h1, .profile-back,
+ .back-link, .instructions-heading h1, .lesson-header h1, .sound-card h2, .gain-heading h2,
+ .gain-scale span:nth-child(2), .gauge-value output, .apple-icon) { color: var(--ink); }
+:root[data-theme="dark"] :is(.description, .login-intro, .service-note, .photo-input,
+ .profile-field > label, .profile-confirmation p, .instructions-heading p, .instructions-list p,
+ .lesson-header p, .playback-status, .gain-help, .gain-scale, .gauge-value > span,
+ .gain-stepper span, .demo-note, .sound-note, .preview-note) { color: var(--muted); }
+:root[data-theme="dark"] :is(.signup-panel h1, .form-confirmation h1, #login-title,
+ .profile-confirmation h2) { color: #91caff; }
+:root[data-theme="dark"] :is(.login-prompt, .home-link, .auth-back) { color: var(--theme-link); }
+:root[data-theme="dark"] .separator { color: var(--theme-link); }
+:root[data-theme="dark"] .separator::before,
+:root[data-theme="dark"] .separator::after { background: var(--theme-link); }
+:root[data-theme="dark"] :is(.bottom-nav, .lesson-nav, .lesson-header) { background: var(--theme-raised); }
+:root[data-theme="dark"] :is(.bottom-nav a, .lesson-nav a) { color: var(--home-ink); }
+:root[data-theme="dark"] :is(.bottom-nav, .lesson-nav) { box-shadow: 0 -12px 28px #0005; }
+:root[data-theme="dark"] :is(.profile-link, .profile-avatar) { background: var(--theme-card); color: #d9ddcf; border-color: #535a48; }
+:root[data-theme="dark"] .profile-avatar svg { stroke: #d9ddcf; }
+:root[data-theme="dark"] .stage-card::before,
+:root[data-theme="dark"] :is(.sound-card, .lesson-tip, .gain-card,
+ .profile-card, .profile-confirmation) { background: var(--theme-card); }
+:root[data-theme="dark"] :is(.sound-card, .gain-card) { border-color: #9e7e38; }
+:root[data-theme="dark"] :is(.detail-panel, .settings-panel) { background: var(--theme-raised); }
+:root[data-theme="dark"] :is(.lesson-tip p, .detail-panel, .settings-panel) { color: var(--ink); }
+:root[data-theme="dark"] :is(.field input, .field select, .profile-field input,
+ .profile-field select, .password-form input) { background: var(--theme-raised); color: var(--ink); border-color: #7994d3; }
+:root[data-theme="dark"] :is(.field input, .profile-field input, .password-form input)::placeholder { color: #b5bba9; }
+:root[data-theme="dark"] .social-button { border-color: #829de4; }
+:root[data-theme="dark"] .social-button:not(:disabled):hover { background: var(--theme-card); }
+:root[data-theme="dark"] .auth-status { background: #4b302b; color: #ffd5cb; }
+:root[data-theme="dark"] .auth-status.is-success { background: #254638; color: #c2f2d6; }
+:root[data-theme="dark"] .confirmation-mark,
+:root[data-theme="dark"] .confirmation-check { background: #254638; color: #b5eccd; }
+:root[data-theme="dark"] .photo-input::file-selector-button { background: var(--theme-raised); color: var(--ink); border-color: #647052; }
+:root[data-theme="dark"] .photo-label { color: #ffa17d; }
+:root[data-theme="dark"] .gauge-track { stroke: #b0b7a7; }
+:root[data-theme="dark"] .gain-stepper button { background: #4c5443; color: var(--ink); }
+:root[data-theme="dark"] .gauge-fill { stroke: #91df49; }
+:root[data-theme="dark"] .gain-gauge.is-muted .gauge-fill { stroke: #89917f; }
+:root[data-theme="dark"] :is(.lesson-divider, .settings-divider) { border-color: #776c47; }
+/* Preserve the supplied raster logo's colors inside a deliberate image tile. */
+:root[data-theme="dark"] .brand { border-radius: 24px; background: #f7f1e5; box-shadow: 0 10px 26px #0004; }
+    </style>
+  </head>
+  <body>
+    <main class="signup-screen">
+      <!-- Account forms submit to the local backend through auth.js. -->
+      <dialog class="signup-panel" open aria-labelledby="signup-title">
+        <h1 id="signup-title">Hey! Sign Up</h1>
+        <p class="auth-status" data-auth-status role="status" hidden></p>
+        <form id="signup-form" method="post" action="/api/auth/signup" class="signup-form">
+          <div class="field">
+            <label for="full-name">Name</label>
+            <input
+              id="full-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              placeholder="Enter your full Name"
+              minlength="2"
+              maxlength="100"
+              required
+            />
+          </div>
+          <div class="field email-field">
+            <label for="email">Email of Parent</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="Enter your email"
+              maxlength="254"
+              required
+            />
+          </div>
+          <div class="age-fields">
+            <div class="field">
+              <label for="age">Age</label>
+              <input
+                id="age"
+                name="age"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                placeholder="Enter age"
+                aria-describedby="age-unit"
+                required
+              />
+              <select
+                id="age-unit"
+                name="age-unit"
+                aria-label="Unit for age"
+                required
+              >
+                <option value="years" selected>Years</option>
+                <option value="months">Months</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="hearing-age">Hearing Age</label>
+              <input
+                id="hearing-age"
+                name="hearing-age"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                placeholder="Enter hearing age"
+                aria-describedby="hearing-age-unit"
+                required
+              />
+              <select
+                id="hearing-age-unit"
+                name="hearing-age-unit"
+                aria-label="Unit for hearing age"
+                required
+              >
+                <option value="months" selected>Months</option>
+                <option value="years">Years</option>
+              </select>
+            </div>
+          </div>
+          <div class="field password-field">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Enter your password"
+              minlength="8"
+              maxlength="128"
+              title="Use at least 8 characters"
+              required
+            />
+          </div>
+          <div class="forgot-row">
+            <button
+              class="text-button"
+              type="button"
+              disabled
+              title="Password recovery will be connected later"
+            >
+              Forgot password?
+            </button>
+          </div>
+          <button
+            class="start-button signup-submit"
+            type="submit"
+          >
+            Let do this <span aria-hidden="true">👍</span>
+          </button>
+        </form>
+
+        <div class="separator"><span>Or</span></div>
+        <div class="social-options" aria-label="Sign-in options">
+          <button
+            class="social-button" data-provider="apple"
+            type="button"
+          >
+            <svg
+              class="provider-icon apple-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                d="M17.05 12.54c.03 3.24 2.84 4.32 2.87 4.33-.02.08-.45 1.54-1.48 3.05-.9 1.3-1.83 2.6-3.3 2.63-1.44.03-1.9-.85-3.55-.85-1.64 0-2.15.82-3.52.88-1.42.05-2.49-1.41-3.39-2.71-1.84-2.66-3.25-7.52-1.36-10.8a5.26 5.26 0 0 1 4.45-2.7c1.39-.03 2.71.94 3.56.94.84 0 2.43-1.17 4.09-1  .7.03 2.66.28 3.92 2.12-.1.06-2.34 1.36-2.29 4.11ZM14.34 4.55c.75-.91 1.26-2.18 1.12-3.45-1.08.04-2.39.72-3.17 1.63-.7.81-1.31 2.1-1.15 3.35 1.21.09 2.45-.62 3.2-1.53Z"
+              />
+            </svg>
+            <span>Login with Apple</span>
+          </button>
+          <button
+            class="social-button" data-provider="google"
+            type="button"
+          >
+            <svg class="provider-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="#4285f4"
+                d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z"
+              />
+              <path
+                fill="#34a853"
+                d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.05.97-3.38.97-2.6 0-4.81-1.76-5.6-4.12H3.06v2.59A10 10 0 0 0 12 22Z"
+              />
+              <path
+                fill="#fbbc05"
+                d="M6.4 13.93a6 6 0 0 1 0-3.86V7.48H3.06a10 10 0 0 0 0 9.04l3.34-2.59Z"
+              />
+              <path
+                fill="#ea4335"
+                d="M12 5.95c1.47 0 2.79.51 3.83 1.51l2.88-2.88A9.63 9.63 0 0 0 12 2a10 10 0 0 0-8.94 5.48l3.34 2.59A5.99 5.99 0 0 1 12 5.95Z"
+              />
+            </svg>
+            <span>Login with Google</span>
+          </button>
+        </div>
+        <p class="login-prompt">
+          Already have an account?
+          <a class="text-button" href="login.html">Log in</a>
+        </p>
+        <p class="service-note">Email sign-in is available. Apple and Google setup is pending.</p>
+      </dialog>
+    </main>
+      <!-- Internal script: auth.js -->
+    <script data-source="auth.js">
+'use strict';
+// Account UI uses the same-origin backend. Passwords and session tokens are
+// never stored in localStorage or browser-readable cookies.
+(() => {
+  const message = document.querySelector('[data-auth-status]');
+  function show(text, success = false) {
+    if (!message) return;
+    message.textContent = text;
+    message.hidden = false;
+    message.classList.toggle('is-success', success);
+  }
+  async function session() {
+    if (!['http:', 'https:'].includes(location.protocol)) throw Error('Start the backend and open http://localhost:3000 to use accounts.');
+    const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' });
+    if (!response.ok) { const result = await response.json().catch(() => ({})); throw Error(result.error || 'Account service is unavailable. Please try again shortly.'); }
+    return response.json();
+  }
+  async function post(endpoint, data = {}) {
+    const current = await session();
+    const response = await fetch(endpoint, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': current.csrfToken },
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok) throw Error(result.error || 'Please try again.');
+    return result;
+  }
+  for (const [id, endpoint] of [['signup-form', '/api/auth/signup'], ['login-form', '/api/auth/login']]) {
+    const form = document.getElementById(id);
+    if (!form) continue;
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const button = form.querySelector('[type="submit"]');
+      if (button.disabled) return;
+      button.disabled = true;
+      show(id === 'signup-form' ? 'Creating your account…' : 'Signing in…', true);
+      try {
+        await post(endpoint, Object.fromEntries(new FormData(form)));
+        form.querySelector('[type="password"]').value = '';
+        const next = new URLSearchParams(location.search).get('next');
+        location.assign(next && /^(?:stage-[1-7]|instructions(?:-stage-[2-7])?)\.html$/.test(next) ? next : 'home.html');
+      } catch (error) { show(error.message); }
+      finally { button.disabled = false; }
+    });
+  }
+  // Providers intentionally fail clearly until their real OAuth setup is added.
+  // These buttons never simulate an Apple/Google account or save a fake session.
+  document.querySelectorAll('[data-provider]').forEach(button => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try { await post(`/api/auth/${button.dataset.provider}`); }
+      catch (error) { show(error.message); }
+      finally { button.disabled = false; }
+    });
+  });
+  document.querySelectorAll('[data-logout]').forEach(button => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try { await post('/api/auth/logout'); location.assign('index.html'); }
+      catch (error) { show(error.message); button.disabled = false; }
+    });
+  });
+  // Public lessons stay accessible. If a session exists, use the account name
+  // instead of the design's sample name. Render only text, never user HTML.
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    session().then(({ user }) => {
+      if (!user) return;
+      const greeting = document.querySelector('.greeting strong');
+      const learner = document.querySelector('.learner-details h1');
+      if (greeting) greeting.textContent = user.name;
+      if (learner) learner.textContent = user.name;
+    }).catch(() => {});
+  }
+})();
+    </script>
+  </body>
+</html>

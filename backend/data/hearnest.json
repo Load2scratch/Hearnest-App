@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": "08d4ea68-6749-410e-ad5a-16a6da20cec9",
+      "email": "yugvyasa1@gmail.com",
+      "name": "yug vyasa",
+      "password_hash": "scrypt$c1fc6df4f0810fbd0fea24ec6e3bc682$d6974b3fa0eb6280c3adff3ca7641e5257e0dc0a2ed762810dfc335a86942656161148319f415d51b7f55e6d9ce0675d0cb5ff2dcf6e34c213a8283df8092627",
+      "profile_json": "{\"age\":{\"value\":4,\"unit\":\"months\"},\"hearing-age\":{\"value\":4,\"unit\":\"months\"}}",
+      "created_at": 1793610208162
+    }
+  ],
+  "sessions": [
+    {
+      "token_hash": "aa5b96f6b73b8a50e398d4e2e58e87f815dba72e2cca8137d6c007260ac018db",
+      "user_id": "08d4ea68-6749-410e-ad5a-16a6da20cec9",
+      "expires_at": 1793696645139
+    },
+    {
+      "token_hash": "bde6f1d9b19787136702925a791d5be86ad87129505feb1574159c414474afe0",
+      "user_id": "08d4ea68-6749-410e-ad5a-16a6da20cec9",
+      "expires_at": 1793701508178
+    },
+    {
+      "token_hash": "100061bca6554c93bf7d191ebb4fca6ae08d190336dfbfb5ed665cf52fe49944",
+      "user_id": "08d4ea68-6749-410e-ad5a-16a6da20cec9",
+      "expires_at": 1793720180582
+    }
+  ],
+  "learning_events": []
+}

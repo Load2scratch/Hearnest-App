@@ -1,0 +1,15 @@
+{
+  "name": "hearnest-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HEARNEST frontend and private JSON account backend",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "start": "node backend/server.cjs",
+    "test": "node --test backend/auth.test.cjs backend/stage-access.test.cjs backend/progress.test.cjs backend/json-store.test.cjs backend/deployment.test.cjs",
+    "build": "node scripts/build.cjs",
+    "pretest": "node scripts/build.cjs"
+  }
+}
