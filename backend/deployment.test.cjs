@@ -55,6 +55,31 @@ test('Vercel pre-parsed JSON request bodies work with secure cookies',async()=>{
  const signup=await request('/api/auth/signup',{name:'Parsed Body',email:'parsed@example.test',password:'Parsed-password-42',age:1,'age-unit':'years','hearing-age':3,'hearing-age-unit':'months'},cookie,bootstrap.data.csrfToken);
  assert.equal(signup.status,201);
 });
+test('Production and exact Vercel deployment hosts support accounts while unrelated hosts and origins are rejected',async()=>{
+ const keys=['VERCEL_URL','VERCEL_BRANCH_URL'];
+ const saved=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
+ try{
+  process.env.VERCEL_URL='hearnest-build-team.vercel.app';
+  process.env.VERCEL_BRANCH_URL='hearnest-git-main-team.vercel.app';
+  const app=await createApp({serverless:true,store:new JsonStore(':memory:'),secret:'stable-test-secret-with-32-characters',origin:'https://app.example'});
+  async function request(host,url,body,cookies,csrf,origin='https://'+host){
+   let result;const responseHeaders={};
+   const res={headersSent:false,setHeader(k,v){responseHeaders[k.toLowerCase()]=v;},getHeader(k){return responseHeaders[k.toLowerCase()];},writeHead(status,extra){this.status=status;this.headersSent=true;Object.assign(responseHeaders,extra);},end(raw){result={status:this.status,headers:responseHeaders,data:JSON.parse(raw)};}};
+   await app.handler({url,method:body?'POST':'GET',headers:{host,origin,'content-type':'application/json',cookie:cookies,'x-csrf-token':csrf},body,socket:{}},res);
+   return result;
+  }
+  for(const host of ['app.example',process.env.VERCEL_URL,process.env.VERCEL_BRANCH_URL]){
+   const session=await request(host,'/api/auth/session');assert.equal(session.status,200);
+   const cookie=session.headers['set-cookie'].map(value=>value.split(';')[0]).join('; ');
+   const person={name:'Host Test',email:host+'@example.test',password:'Host-test-password-42',age:9,'age-unit':'months','hearing-age':3,'hearing-age-unit':'months'};
+   assert.equal((await request(host,'/api/auth/signup',person,cookie,session.data.csrfToken,'https://outside.example')).status,403);
+   assert.equal((await request(host,'/api/auth/signup',person)).status,403);
+   assert.equal((await request(host,'/api/auth/signup',person,cookie,session.data.csrfToken)).status,201);
+  }
+  for(const host of ['unrelated.vercel.app','hearnest-build-team.vercel.app.evil.example'])assert.equal((await request(host,'/api/auth/session')).status,403);
+ }finally{for(const key of keys){if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];}}
+});
+
 test('Static build contains welcome artwork and no private backend files',()=>{
  const root=path.resolve(__dirname,'..'),out=path.join(root,'dist');
  assert(fs.existsSync(path.join(out,'assets','hearnest-reference.jpg')));
