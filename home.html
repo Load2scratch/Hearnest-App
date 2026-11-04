@@ -611,8 +611,7 @@ body { min-width: 0; }
               <p>0–3 Months of using Cochlear Implant (Hearing Age)</p>
             </div>
             <div class="stage-actions">
-              <!-- Replace # with the file path for stage 1, e.g. stage-1.html. -->
-              <a class="stage-start" data-stage-link="1" href="stage-1.html" aria-label="Start stage 1">Start</a>
+              <a class="stage-start" data-stage-link="1" data-stage-destination="instructions.html" href="instructions.html" aria-label="Start stage 1">Start</a>
               <label class="favorite">
                 <input
                   type="checkbox"
@@ -632,8 +631,7 @@ body { min-width: 0; }
               <p>4–6 Months of using Cochlear Implant (Hearing Age)</p>
             </div>
             <div class="stage-actions">
-              <!-- Replace # with the file path for stage 2, e.g. stage-2.html. -->
-              <a class="stage-start" data-stage-link="2" href="stage-2.html" aria-label="Start stage 2">Start</a>
+              <a class="stage-start" data-stage-link="2" data-stage-destination="instructions-stage-2.html" href="instructions-stage-2.html" aria-label="Start stage 2">Start</a>
               <label class="favorite">
                 <input
                   type="checkbox"
@@ -1180,7 +1178,7 @@ body { min-width: 0; }
           note.textContent = number === 1 ? 'Always available' : stage?.previewOpen ? 'Temporarily unlocked' : !access.authenticated ? 'Log in to unlock' : !stage?.unlocked ? `Unlocks at ${stage?.minMonths ?? 0} hearing months` : !stage.available ? 'Lessons coming soon' : stage.current ? 'Current stage' : 'Available for practice';
         }
         if (enabled) {
-          link.href = stage.path;link.removeAttribute('aria-disabled');link.removeAttribute('tabindex');
+          link.href = link.dataset.stageDestination || stage.path;link.removeAttribute('aria-disabled');link.removeAttribute('tabindex');
           link.classList.remove('is-stage-locked');link.title='';
         } else {
           link.removeAttribute('href');link.setAttribute('aria-disabled','true');link.setAttribute('tabindex','-1');
