@@ -51,6 +51,12 @@ async function createApp(options = {}) {
     catch { throw Object.assign(Error('APP_ORIGIN must be your HTTPS website origin, for example https://hearnest-learn.vercel.app. Update it in Vercel and redeploy.'),{code:'INVALID_APP_ORIGIN',missing:['APP_ORIGIN']}); }
   }
   if(production && !configuredOrigin) throw Object.assign(Error('APP_ORIGIN is missing. Set it to your HTTPS website origin in Vercel and redeploy.'),{code:'INVALID_APP_ORIGIN',missing:['APP_ORIGIN']});
+  const deploymentOrigins = new Set(configuredOrigin ? [configuredOrigin] : []);
+  // Vercel also serves this deployment at its own exact deployment/branch URLs.
+  // Trust server-provided hostnames only; never accept arbitrary vercel.app hosts.
+  if (serverless) for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]) {
+    if (host && /^[a-z0-9-]+\.vercel\.app$/i.test(host)) deploymentOrigins.add(`https://${host.toLowerCase()}`);
+  }
   const sessionName = production ? '__Host-hearnest_session' : 'hearnest_session';
   const csrfName = production ? '__Host-hearnest_csrf' : 'hearnest_csrf';
   const signCsrf = value => crypto.createHmac('sha256', csrfKey).update(value).digest('base64url');
@@ -140,7 +146,7 @@ async function createApp(options = {}) {
     res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
     try {
       const port = server.address()?.port;
-      const origins = configuredOrigin ? [new URL(configuredOrigin).origin] : [`http://localhost:${port}`, `http://127.0.0.1:${port}`];
+      const origins = configuredOrigin ? [...deploymentOrigins] : [`http://localhost:${port}`, `http://127.0.0.1:${port}`];
       const hostOrigin = `${production ? 'https' : 'http'}://${req.headers.host}`;
       if (!origins.includes(hostOrigin)) throw new ApiError(403, 'This host is not configured for the app.');
       const url = new URL(req.url, hostOrigin);
